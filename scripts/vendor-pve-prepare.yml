@@ -1,0 +1,23 @@
+#cloud-config
+
+growpart:
+  mode: auto
+  devices: ["/"]
+
+timezone: Etc/UTC
+package_update: true
+package_upgrade: true
+packages:
+  - ca-certificates
+  - curl
+  - haveged
+  - pastebinit
+  - pwgen
+  - qemu-guest-agent
+  - vim-nox
+  - wget
+
+runcmd:
+  - systemctl enable --now haveged.service
+  - systemctl enable --now qemu-guest-agent.service
+  - systemctl poweroff

@@ -1,0 +1,6 @@
+proxmox_url = ""
+proxmox_username = ""
+proxmox_token = ""
+proxmox_node = ""
+proxmox_tls_skip_verify = true
+proxmox_source_vm_name = "jammy-server-cloudimg-amd64-9001"
