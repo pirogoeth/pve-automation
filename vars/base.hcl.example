@@ -1,6 +1,8 @@
 proxmox_url = ""
 proxmox_username = ""
+# Proxmox API token. Turn Privilege Separation OFF!
 proxmox_token = ""
 proxmox_node = ""
-proxmox_tls_skip_verify = true
-proxmox_source_vm_name = "jammy-server-cloudimg-amd64-9001"
+proxmox_skip_tls_verify = false
+
+source_vm_name = "jammy-server-cloudimg-amd64-9001"

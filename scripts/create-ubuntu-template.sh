@@ -13,6 +13,7 @@ FORCE=0
 VM_DISK_SIZE="16G"
 CUSTOM_USER_CONFIG=""
 CLEANUP=1
+TEMPLATE_VM_NAME=""
 
 SNIPPETS_STORAGE_PATH="/opt/pve-cloud-init"
 SNIPPETS_DIRECTORY="${SNIPPETS_STORAGE_PATH}/snippets"
@@ -20,19 +21,44 @@ SNIPPETS_DIRECTORY="${SNIPPETS_STORAGE_PATH}/snippets"
 TMPDIR="$(mktemp -d /tmp/${this_script}.XXXXXX)"
 LOGFILE="${TMPDIR}/${this_script}.log"
 
+function usage::argument() {
+  local arg="$1"
+  local desc="$2"
+  local param="$3"
+
+  desc="$(fold -sw 60 <<<"${desc}")"
+
+  if [ ! -z "${param}" ] ; then
+    param="<${param}>"
+  fi
+
+  if [ "${#desc}" -ge 60 ] ; then
+    spacer="$(printf "%21s" "")"
+    desc_head="$(sed -ne '1p' <<<"${desc}")"
+    desc_tail="$(sed -ne '1d;p' <<<"${desc}")"
+    desc_tail="$(sed -e 's/^/'"${spacer}"'/g' <<<"${desc_tail}")"
+    nl=$'\n'
+    desc="${desc_head}${nl}${desc_tail}"
+  fi
+
+  lhs=$(printf "%s %s" "${arg}" "${param}")
+  printf "%-20s %s\n" "${lhs}" "${desc}"
+}
+
 function usage() {
     echo "Usage: $0 -i <vm_id> [-r <release>] [-s <snapshot>] [-m <machine_arch>] [-t <target_iso_storage>] [-T <target_vm_storage>] [-U <cloud-init user config>] [-F]"
-    echo "  -i: VM ID"
-    echo "  -n: Node to provision VM on (e.g. pve-001)"
-    echo "  -r: Release (default: jammy)"
-    echo "  -s: Snapshot (default: current)"
-    echo "  -m: Machine architecture (default: amd64)"
-    echo "  -t: Target ISO storage (default: local)"
-    echo "  -T: Target VM storage (default: local-lvm)"
-    echo "  -F: Force image download and/or VM template creation"
-    echo "  -C: Skip cleaning up temporary files"
-    echo "  -U: PVE storage path to a cloud-init user config file (e.g., local:snippets/users.yml)"
-    echo "  -h: Show this help message"
+    usage::argument "-i" "VM ID" "vm_id"
+    usage::argument "-n" "Node to provision VM on (e.g. pve-001)" "node_name"
+    usage::argument "-r" "Release (default: jammy)" "release_name"
+    usage::argument "-s" "Snapshot (default: current)" "snapshot_name"
+    usage::argument "-m" "Machine architecture (default: amd64)" "arch"
+    usage::argument "-t" "Target ISO storage (default: local)" "iso_store"
+    usage::argument "-T" "Target VM storage (default: local-lvm)" "vm_storage"
+    usage::argument "-F" "Force image download and/or VM template creation"
+    usage::argument "-C" "Skip cleaning up temporary files"
+    usage::argument "-U" "PVE storage path to a cloud-init user config file (e.g., local:snippets/users.yml)" "snippet_path"
+    usage::argument "-N" "Custom name for the final VM template" "name"
+    usage::argument "-h" "Show this help message"
 }
 
 function log() {
@@ -60,7 +86,6 @@ function ensure_snippets_storage() {
   fi
 
   write_vendor_snippets
-  test -z "${CUSTOM_USER_CONFIG}" && write_default_user_snippets
 }
 
 function write_vendor_snippets() {
@@ -84,16 +109,6 @@ packages:
   - vim-nox
   - wget
 
-runcmd:
-  - systemctl enable --now haveged.service
-  - systemctl enable --now qemu-guest-agent.service
-  - systemctl poweroff
-EOF
-}
-
-function write_default_user_snippets() {
-  cat <<EOF> "${SNIPPETS_DIRECTORY}/users.yml"
-#cloud-config
 groups:
   - sudo
   - ssh
@@ -106,6 +121,11 @@ groups:
 #         'ssh_authorized_keys', 'ssh_redirect_user'.
 users:
   - default
+
+runcmd:
+  - systemctl enable --now haveged.service
+  - systemctl enable --now qemu-guest-agent.service
+  - systemctl poweroff
 EOF
 }
 
@@ -198,6 +218,11 @@ function create_vm_template() {
     return 0
   fi
 
+  local ci_user_config=""
+  if [ ! -z "${CUSTOM_USER_CONFIG}" ] ; then
+    ci_user_config=",user=${CUSTOM_USER_CONFIG}"
+  fi
+
   log "Creating VM template: ${target_vm_name}"
   logcapture qm create "${VM_ID}" \
     --cores 2 \
@@ -208,7 +233,6 @@ function create_vm_template() {
     --numa 1 \
     --ipconfig0 ip=dhcp,ip6=auto \
     --agent enabled=1,freeze-fs-on-backup=1,fstrim_cloned_disks=1,type=virtio \
-    --protection 1 \
     --serial0 socket \
     --vga serial0 \
     --name "${target_vm_name}"
@@ -220,26 +244,17 @@ function create_vm_template() {
     --boot c \
     --bootdisk scsi0 \
     --ciuser ubuntu \
-    --cicustom "vendor=cloud-init:snippets/vendor-pve-prepare.yml"
+    --cicustom "vendor=cloud-init:snippets/vendor-pve-prepare.yml${ci_user_config}"
   logcapture qm cloudinit update "${VM_ID}"
+
   # Start the VM to run the prepare script. This will power off the VM when it's done.
   logcapture qm start "${VM_ID}"
   logcapture qm wait "${VM_ID}"
-
-  local ci_user_config="cloud-init:snippets/users.yml"
-  if [ ! -z "${CUSTOM_USER_CONFIG}" ] ; then
-    ci_user_config="${CUSTOM_USER_CONFIG}"
-  fi
-
-  logcapture qm set "${VM_ID}" \
-    --ciuser ubuntu \
-    --cicustom "user=${ci_user_config}"
-  logcapture qm cloudinit update "${VM_ID}"
   logcapture qm template "${VM_ID}"
 }
 
 function main() {
-  while getopts "i:r:s:m:n:t:T:U:FCh" opt; do
+  while getopts "i:r:s:m:n:t:T:U:N:FCh" opt; do
     case $opt in
       i) VM_ID="$OPTARG" ;;
       n) VM_NODE="$OPTARG" ;;
@@ -249,6 +264,7 @@ function main() {
       t) TARGET_ISO_STORAGE="$OPTARG" ;;
       T) TARGET_VM_STORAGE="$OPTARG" ;;
       U) CUSTOM_USER_CONFIG="$OPTARG" ;;
+      N) TEMPLATE_VM_NAME="$OPTARG" ;;
       F) FORCE=1 ;;
       C) CLEANUP=0 ;;
       h) usage ; exit 127 ;;

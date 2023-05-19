@@ -32,19 +32,19 @@ variable "proxmox_node" {
   default = env("PROXMOX_NODE")
 }
 
+variable "proxmox_skip_tls_verify" {
+  type    = string
+  default = ""
+}
+
 variable "source_vm_id" {
   type    = string
-  default = env("PROXMOX_SOURCE_VM_ID")
+  default = ""
 }
 
 variable "source_vm_name" {
   type    = string
-  default = env("PROXMOX_SOURCE_VM_NAME")
-}
-
-variable "skip_tls_verify" {
-  type    = string
-  default = env("PROXMOX_TLS_SKIP_VERIFY")
+  default = ""
 }
 
 variable "ssh_bastion_host" {
@@ -53,13 +53,13 @@ variable "ssh_bastion_host" {
 }
 
 variable "ssh_bastion_port" {
-  type    = string
-  default = ""
+  type    = number
+  default = 22
 }
 
 variable "ssh_bastion_agent_auth" {
-  type    = string
-  default = ""
+  type    = bool
+  default = false
 }
 
 variable "ssh_bastion_username" {
@@ -102,7 +102,7 @@ source "proxmox-clone" "base" {
   username                 = var.proxmox_username
   password                 = var.proxmox_password
   token                    = var.proxmox_token
-  insecure_skip_tls_verify = convert(var.skip_tls_verify, bool)
+  insecure_skip_tls_verify = try(convert(var.proxmox_skip_tls_verify, bool), false)
 
   clone_vm    = var.source_vm_name
   clone_vm_id = var.source_vm_id != "" ? parseint(var.source_vm_id) : null
