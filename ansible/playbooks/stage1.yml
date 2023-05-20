@@ -1,0 +1,10 @@
+---
+
+- hosts: all
+  become: yes
+  roles:
+  - role: artis3n.tailscale
+    vars:
+      verbose: true
+      tailscale_up_skip: true
+  - role: "{{ packer_image_type }}"

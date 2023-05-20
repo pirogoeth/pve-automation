@@ -5,4 +5,4 @@ proxmox_token = ""
 proxmox_node = ""
 proxmox_skip_tls_verify = false
 
-source_vm_name = "jammy-server-cloudimg-amd64-9001"
+source_vm_name = "ubuntu-jammy-current-amd64"

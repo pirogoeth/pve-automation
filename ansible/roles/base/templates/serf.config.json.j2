@@ -1,0 +1,8 @@
+{
+  "interface": "tailscale0",
+  "profile": "wan",
+  "tags_file": "/opt/serf/tags.json",
+  "log_level": "info",
+  "encrypt_key": "{{ serf_encryption_key }}",
+  "discover": "{{ serf_discovery_cluster_name|default('serf') }}"
+}

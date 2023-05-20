@@ -1,0 +1,10 @@
+---
+
+- name: Reload systemd
+  systemd:
+    daemon_reload: yes
+
+- name: Reload serf
+  systemd:
+    name: serf.service
+    state: reloaded

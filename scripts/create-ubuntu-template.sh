@@ -125,7 +125,6 @@ users:
 runcmd:
   - systemctl enable --now haveged.service
   - systemctl enable --now qemu-guest-agent.service
-  - systemctl poweroff
 EOF
 }
 
@@ -208,7 +207,7 @@ function create_vm_template() {
   local target_filename="$1"
   local target_basename="$(basename ${target_filename%.img})"
   local target_vm_id="${VM_ID}"
-  local target_vm_name="${target_basename}-${target_vm_id}"
+  local target_vm_name="ubuntu-${RELEASE}-${SNAPSHOT}-${MACHINE_ARCH}"
 
   check_delete_vm_template "${VM_ID}"
   local check_res=$?
@@ -239,7 +238,8 @@ function create_vm_template() {
   logcapture qm disk import "${VM_ID}" "${target_filename}" "${TARGET_VM_STORAGE}"
   logcapture qm set "${VM_ID}" \
     --scsihw virtio-scsi-pci \
-    --scsi0 "${TARGET_VM_STORAGE}:vm-${VM_ID}-disk-0,size=${VM_DISK_SIZE}"
+    --scsi0 "${TARGET_VM_STORAGE}:vm-${VM_ID}-disk-0"
+  logcapture qm disk resize "${VM_ID}" scsi0 "${VM_DISK_SIZE}"
   logcapture qm set "${VM_ID}" \
     --boot c \
     --bootdisk scsi0 \
@@ -249,8 +249,26 @@ function create_vm_template() {
 
   # Start the VM to run the prepare script. This will power off the VM when it's done.
   logcapture qm start "${VM_ID}"
+  wait_for_guest_agent
+  logcapture qm shutdown "${VM_ID}"
   logcapture qm wait "${VM_ID}"
   logcapture qm template "${VM_ID}"
+  
+  echo "${target_vm_name}"
+}
+
+function wait_for_guest_agent() {
+  log "Waiting for guest agent to respond..."
+
+  while [ 1 ] ; do
+    logcapture qm guest cmd "${VM_ID}" ping
+    if [ "$?" -eq "0" ] ; then
+      log "Guest agent is ready"
+      return 0
+    fi
+
+    sleep 1
+  done
 }
 
 function main() {
@@ -291,7 +309,9 @@ function main() {
 
   ensure_snippets_storage
   image_path=$(download_image "${image_url}" "${target_filename}")
-  create_vm_template "${image_path}"
+  template_name=$(create_vm_template "${image_path}")
+
+  log "Template created: ${template_name}"
 
   if [ "${CLEANUP}" == "1" ] ; then
     log "Cleaning up temporary files"

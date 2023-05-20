@@ -110,6 +110,7 @@ source "proxmox-clone" "base" {
   node               = var.proxmox_node
   ssh_username       = "ubuntu"
   vm_name            = "packer-pve-base-{{timestamp}}"
+  template_name      = "ubuntu-jammy-base-{{timestamp}}"
   serials            = ["socket"]
   qemu_agent         = true
   cloud_init         = true
@@ -127,5 +128,30 @@ source "proxmox-clone" "base" {
 }
 
 build {
+  name = "base"
   sources = ["source.proxmox-clone.base"]
+
+  provisioner "shell" {
+    script = "scripts/bootstrap-stage0.sh"
+    execute_command = "env {{ .Vars }} {{ .Path }}"
+    env = {
+      "ANSIBLE_VERSION" = "2.14"
+    }
+  }
+
+  provisioner "ansible-local" {
+    playbook_file = "ansible/playbooks/stage1.yml"
+    role_paths = [
+      "ansible/roles/common",
+      "ansible/roles/base",
+      "ansible/roles/docker",
+      "ansible/roles/k3s",
+    ]
+    command = "~${build.User}/.local/bin/ansible-playbook"
+    extra_arguments = [
+      "-e", "packer_image_type=${build.name}"
+    ]
+    galaxy_file = "ansible/requirements.yml"
+    galaxy_command = "~${build.User}/.local/bin/ansible-galaxy"
+  }
 }
