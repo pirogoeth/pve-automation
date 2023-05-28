@@ -6,7 +6,7 @@ help: #> Show this help
 help:
 	@printf "\033[1mUsage: \033[0mmake [target]\n\n"
 	@printf "\033[1m\033[33mtargets:\033[0m\n"
-	@grep -E '^[a-zA-Z_-]+:.*?#> .*' $(MAKEFILE_LIST) \
+	@grep -E '^\S+:.*?#> .*' $(MAKEFILE_LIST) \
 			| sort \
 			| awk '\
 					BEGIN {FS = ":.*?#> "}; \
@@ -45,6 +45,7 @@ upstream/ubuntu:
 		$${FORCE}
 
 manifests/packer-base.json: #> Build a packer image+manifest for the Ubuntu template.
+manifests/packer-base.json:
 	mkdir -p manifests
 	packer build \
 		-var-file vars/base.hcl \
@@ -59,9 +60,11 @@ manifests/packer-docker.json: manifests/packer-base.json
 		packer/docker.pkr.hcl
 
 manifests/packer-k3s.json: #> Build a packer image+manifest for the K3s template.
+manifests/packer-k3s.json: #> Parallelized builds are disabled here due to a race condition in the builder.
 manifests/packer-k3s.json: manifests/packer-docker.json
 	mkdir -p manifests
 	packer build \
+	 	-parallel-builds 1 \
 		-var-file vars/k3s.hcl \
 		-var "source_vm_id=$(shell scripts/get-last-run.sh manifests/packer-docker.json)" \
 		packer/k3s.pkr.hcl
