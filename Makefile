@@ -1,4 +1,5 @@
 SHELL := /bin/bash
+.DEFAULT_GOAL := all
 
 .PHONY: help
 help: #> Show this help
@@ -43,8 +44,27 @@ upstream/ubuntu:
 		-U $${CUSTOM_USER_CONFIG}
 		$${FORCE}
 
-.PHONY: template/ubuntu
-template/ubuntu/base:
+manifests/packer-base.json: #> Build a packer image+manifest for the Ubuntu template.
+	mkdir -p manifests
 	packer build \
 		-var-file vars/base.hcl \
 		packer/base.pkr.hcl
+
+manifests/packer-docker.json: #> Build a packer image+manifest for the Docker template.
+manifests/packer-docker.json: manifests/packer-base.json
+	mkdir -p manifests
+	packer build \
+		-var-file vars/docker.hcl \
+		-var "source_vm_id=$(shell scripts/get-last-run.sh manifests/packer-base.json)" \
+		packer/docker.pkr.hcl
+
+manifests/packer-k3s.json: #> Build a packer image+manifest for the K3s template.
+manifests/packer-k3s.json: manifests/packer-docker.json
+	mkdir -p manifests
+	packer build \
+		-var-file vars/k3s.hcl \
+		-var "source_vm_id=$(shell scripts/get-last-run.sh manifests/packer-docker.json)" \
+		packer/k3s.pkr.hcl
+
+.PHONY: all
+all: manifests/packer-k3s.json

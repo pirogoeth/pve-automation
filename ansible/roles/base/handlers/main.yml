@@ -3,8 +3,10 @@
 - name: Reload systemd
   systemd:
     daemon_reload: yes
+  when: packer_build_type is not defined
 
 - name: Reload serf
   systemd:
     name: serf.service
     state: reloaded
+  when: packer_build_type is not defined

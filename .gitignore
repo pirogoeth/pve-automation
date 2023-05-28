@@ -1,3 +1,5 @@
 .env
 cloud-init-cfgs
 vars/*.hcl
+ansible/vars/**/*.yml
+manifests

@@ -1,0 +1,4 @@
+---
+
+serf_encryption_key: "secret"
+serf_discovery_cluster_name: "default"

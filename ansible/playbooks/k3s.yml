@@ -1,0 +1,15 @@
+---
+
+- hosts: all
+  become: yes
+  roles:
+  - role: xanmanning.k3s
+    vars:
+      k3s_become: true
+      k3s_state: installed
+      k3s_release_version: false
+      # TODO: Need a way to "service discover" the leader later.
+      k3s_registration_address: ~
+      k3s_service_requires:
+      - tailscaled.service
+      - docker.service

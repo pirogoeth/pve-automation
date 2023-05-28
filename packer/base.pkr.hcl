@@ -87,7 +87,7 @@ variable "ssh_bastion_certificate_file" {
   default = ""
 }
 
-source "proxmox-clone" "base" {
+source "proxmox-clone" "template" {
   communicator                 = "ssh"
   ssh_bastion_host             = var.ssh_bastion_host
   ssh_bastion_port             = var.ssh_bastion_port
@@ -129,7 +129,7 @@ source "proxmox-clone" "base" {
 
 build {
   name = "base"
-  sources = ["source.proxmox-clone.base"]
+  sources = ["source.proxmox-clone.template"]
 
   provisioner "shell" {
     script = "scripts/bootstrap-stage0.sh"
@@ -140,7 +140,7 @@ build {
   }
 
   provisioner "ansible-local" {
-    playbook_file = "ansible/playbooks/stage1.yml"
+    playbook_file = "ansible/playbooks/base.yml"
     role_paths = [
       "ansible/roles/common",
       "ansible/roles/base",
@@ -149,9 +149,15 @@ build {
     ]
     command = "~${build.User}/.local/bin/ansible-playbook"
     extra_arguments = [
-      "-e", "packer_image_type=${build.name}"
+      "-e", "packer_image_type=${build.name}",
     ]
     galaxy_file = "ansible/requirements.yml"
     galaxy_command = "~${build.User}/.local/bin/ansible-galaxy"
+    group_vars = "ansible/vars/${build.name}"
+  }
+
+  post-processor "manifest" {
+    output = "manifests/packer-${build.name}.json"
+    strip_path = true
   }
 }
