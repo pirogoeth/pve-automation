@@ -103,7 +103,8 @@ source "proxmox-clone" "docker" {
   clone_vm_id        = var.source_vm_id
   node               = var.proxmox_node
   ssh_username       = "ubuntu"
-  vm_name            = "packer-pve-k3s-{{timestamp}}"
+  vm_name            = "packer-pve-buildkite-{{timestamp}}"
+  template_name      = "ubuntu-jammy-buildkite-{{timestamp}}"
   serials            = ["socket"]
   qemu_agent         = true
   cloud_init         = true
@@ -126,18 +127,14 @@ source "proxmox-clone" "docker" {
 }
 
 build {
-  name    = "k3s-leader"
-  source "proxmox-clone.docker" {
-    template_name = "ubuntu-jammy-k3s-leader-{{timestamp}}"
-  }
+  name    = "buildkite"
+  sources = ["source.proxmox-clone.docker"]
 
   provisioner "ansible-local" {
-    playbook_file = "ansible/playbooks/k3s.yml"
+    playbook_file = "ansible/playbooks/buildkite.yml"
     role_paths = [
       "ansible/roles/common",
-      "ansible/roles/base",
-      "ansible/roles/docker",
-      "ansible/roles/k3s",
+      "ansible/roles/buildkite",
     ]
     command = "~${build.User}/.local/bin/ansible-playbook"
     extra_arguments = [
@@ -149,36 +146,7 @@ build {
   }
 
   post-processor "manifest" {
-    output = "manifests/packer-k3s.json"
-    strip_path = true
-  }
-}
-
-build {
-  name    = "k3s-agent"
-  source "proxmox-clone.docker" {
-    template_name = "ubuntu-jammy-k3s-agent-{{timestamp}}"
-  }
-
-  provisioner "ansible-local" {
-    playbook_file = "ansible/playbooks/k3s.yml"
-    role_paths = [
-      "ansible/roles/common",
-      "ansible/roles/base",
-      "ansible/roles/docker",
-      "ansible/roles/k3s",
-    ]
-    command = "~${build.User}/.local/bin/ansible-playbook"
-    extra_arguments = [
-      "-e", "packer_image_type=${build.name}",
-    ]
-    galaxy_file    = "ansible/requirements.yml"
-    galaxy_command = "~${build.User}/.local/bin/ansible-galaxy"
-    group_vars     = "ansible/vars/${build.name}"
-  }
-
-  post-processor "manifest" {
-    output = "manifests/packer-k3s.json"
+    output = "manifests/packer-buildkite.json"
     strip_path = true
   }
 }

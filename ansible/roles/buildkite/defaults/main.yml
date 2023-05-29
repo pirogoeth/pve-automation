@@ -1,0 +1,6 @@
+---
+
+buildkite_agent_version: '3'
+buildkite_agent_state: 'stopped'
+buildkite_agent_config:
+  token: "{{ buildkite_agent_token }}"

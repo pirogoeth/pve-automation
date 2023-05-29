@@ -1,0 +1,38 @@
+---
+
+- name: Make buildkite directories
+  file:
+    path: "{{ item }}"
+    state: directory
+    owner: root
+    group: root
+    mode: 0750
+    recurse: yes
+  loop:
+    - /opt/buildkite/hooks
+    - /opt/buildkite/secrets
+
+- name: Write buildkite agent configuration
+  copy:
+    content: |
+      {% for key, value in buildkite_agent_config|default({})|items %}
+      {{ key }}={{ value }}
+      {% endfor %}
+    dest: /opt/buildkite/agent.cfg
+    owner: root
+    group: root
+    mode: 0700
+
+- name: Write buildkite-agent.service unit file
+  template:
+    src: buildkite-agent.service.j2
+    dest: /etc/systemd/system/buildkite-agent.service
+    owner: root
+    group: root
+    mode: 0644
+
+- name: Enable buildkite-agent.service
+  systemd:
+    name: buildkite-agent.service
+    enabled: yes
+    state: "{{ buildkite_agent_state }}"
