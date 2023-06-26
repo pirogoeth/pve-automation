@@ -82,7 +82,16 @@ variable "ssh_bastion_certificate_file" {
   default = ""
 }
 
-source "proxmox-clone" "docker" {
+variable "build_time" {
+  type    = string
+  default = "{{timestamp}}"
+}
+
+locals {
+  template_prefix = "ubuntu-jammy-buildkite"
+}
+
+source "proxmox-clone" "buildkite" {
   communicator                 = "ssh"
   ssh_bastion_host             = var.ssh_bastion_host
   ssh_bastion_port             = var.ssh_bastion_port
@@ -98,13 +107,12 @@ source "proxmox-clone" "docker" {
   password                 = var.proxmox_password
   token                    = var.proxmox_token
   insecure_skip_tls_verify = try(convert(var.proxmox_skip_tls_verify, bool), false)
-  task_timeout             = "5m" 
+  task_timeout             = "5m"
 
   clone_vm_id        = var.source_vm_id
   node               = var.proxmox_node
   ssh_username       = "ubuntu"
-  vm_name            = "packer-pve-buildkite-{{timestamp}}"
-  template_name      = "ubuntu-jammy-buildkite-{{timestamp}}"
+  vm_name            = "packer-pve-buildkite-${var.build_time}"
   serials            = ["socket"]
   qemu_agent         = true
   cloud_init         = true
@@ -127,8 +135,10 @@ source "proxmox-clone" "docker" {
 }
 
 build {
-  name    = "buildkite"
-  sources = ["source.proxmox-clone.docker"]
+  name = "buildkite"
+  source "proxmox-clone.buildkite" {
+    template_name = "${local.template_prefix}-${var.build_time}"
+  }
 
   provisioner "ansible-local" {
     playbook_file = "ansible/playbooks/buildkite.yml"
@@ -146,7 +156,10 @@ build {
   }
 
   post-processor "manifest" {
-    output = "manifests/packer-buildkite.json"
+    output     = "manifests/packer-buildkite.json"
     strip_path = true
+    custom_data = {
+      template_name = "${local.template_prefix}-${var.build_time}"
+    }
   }
 }

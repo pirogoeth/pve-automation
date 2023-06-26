@@ -1,0 +1,5 @@
+proxmox_url = "https://100.76.69.35:8006/api2/json"
+proxmox_token_id = "user@pam!packer"
+proxmox_token_secret = "your-token-here"
+proxmox_node = "node-name"
+proxmox_skip_tls_verify = true

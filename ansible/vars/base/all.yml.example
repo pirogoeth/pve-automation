@@ -2,3 +2,8 @@
 
 serf_encryption_key: "secret"
 serf_discovery_cluster_name: "default"
+
+tailscale_authkey: "blah"
+
+netdata_cloud_claim_token: "ajskbndbgfljn"
+netdata_cloud_room_id: "some-uuid"

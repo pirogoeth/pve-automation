@@ -1,0 +1,4 @@
+---
+
+- include_tasks: support.yml
+  when: k3s_mode == "support"

@@ -1,0 +1,8 @@
+---
+
+# Netdata task defaults
+netdata_start_after_install: false
+netdata_use_nightly_channel: false
+netdata_send_telemetry: true
+netdata_cloud_claim_token: ""
+netdata_cloud_room_ids: []

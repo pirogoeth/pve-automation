@@ -87,7 +87,16 @@ variable "ssh_bastion_certificate_file" {
   default = ""
 }
 
-source "proxmox-clone" "template" {
+variable "build_time" {
+  type    = string
+  default = "{{timestamp}}"
+}
+
+locals {
+  template_prefix = "ubuntu-jammy-base"
+}
+
+source "proxmox-clone" "base" {
   communicator                 = "ssh"
   ssh_bastion_host             = var.ssh_bastion_host
   ssh_bastion_port             = var.ssh_bastion_port
@@ -103,14 +112,14 @@ source "proxmox-clone" "template" {
   password                 = var.proxmox_password
   token                    = var.proxmox_token
   insecure_skip_tls_verify = try(convert(var.proxmox_skip_tls_verify, bool), false)
+  task_timeout             = "5m"
 
   clone_vm    = var.source_vm_name
   clone_vm_id = var.source_vm_id != "" ? parseint(var.source_vm_id) : null
 
   node               = var.proxmox_node
   ssh_username       = "ubuntu"
-  vm_name            = "packer-pve-base-{{timestamp}}"
-  template_name      = "ubuntu-jammy-base-{{timestamp}}"
+  vm_name            = "packer-pve-base-${var.build_time}"
   serials            = ["socket"]
   qemu_agent         = true
   cloud_init         = true
@@ -129,10 +138,12 @@ source "proxmox-clone" "template" {
 
 build {
   name = "base"
-  sources = ["source.proxmox-clone.template"]
+  source "proxmox-clone.base" {
+    template_name = "${local.template_prefix}-${var.build_time}"
+  }
 
   provisioner "shell" {
-    script = "scripts/bootstrap-stage0.sh"
+    script          = "scripts/bootstrap-stage0.sh"
     execute_command = "env {{ .Vars }} {{ .Path }}"
     env = {
       "ANSIBLE_VERSION" = "2.14"
@@ -151,13 +162,16 @@ build {
     extra_arguments = [
       "-e", "packer_image_type=${build.name}",
     ]
-    galaxy_file = "ansible/requirements.yml"
+    galaxy_file    = "ansible/requirements.yml"
     galaxy_command = "~${build.User}/.local/bin/ansible-galaxy"
-    group_vars = "ansible/vars/${build.name}"
+    group_vars     = "ansible/vars/${build.name}"
   }
 
   post-processor "manifest" {
-    output = "manifests/packer-${build.name}.json"
+    output     = "manifests/packer-${build.name}.json"
     strip_path = true
+    custom_data = {
+      template_name = "${local.template_prefix}-${var.build_time}"
+    }
   }
 }

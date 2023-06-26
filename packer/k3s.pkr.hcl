@@ -82,7 +82,16 @@ variable "ssh_bastion_certificate_file" {
   default = ""
 }
 
-source "proxmox-clone" "docker" {
+variable "build_time" {
+  type    = string
+  default = "{{timestamp}}"
+}
+
+locals {
+  template_prefix = "ubuntu-jammy-k3s"
+}
+
+source "proxmox-clone" "k3s" {
   communicator                 = "ssh"
   ssh_bastion_host             = var.ssh_bastion_host
   ssh_bastion_port             = var.ssh_bastion_port
@@ -98,20 +107,23 @@ source "proxmox-clone" "docker" {
   password                 = var.proxmox_password
   token                    = var.proxmox_token
   insecure_skip_tls_verify = try(convert(var.proxmox_skip_tls_verify, bool), false)
-  task_timeout             = "5m" 
+  task_timeout             = "5m"
 
   clone_vm_id        = var.source_vm_id
   node               = var.proxmox_node
   ssh_username       = "ubuntu"
-  vm_name            = "packer-pve-k3s-{{timestamp}}"
+  vm_name            = "packer-pve-k3s-${var.build_time}"
   serials            = ["socket"]
   qemu_agent         = true
   cloud_init         = true
   scsi_controller    = "virtio-scsi-pci"
   cpu_type           = "host"
   os                 = "l26"
+  sockets            = 1
+  cores              = 2
   ballooning_minimum = 512
-  memory             = 1024
+  memory             = 8192
+  pool               = "k3s"
 
   network_adapters {
     model    = "virtio"
@@ -126,9 +138,9 @@ source "proxmox-clone" "docker" {
 }
 
 build {
-  name    = "k3s-leader"
-  source "proxmox-clone.docker" {
-    template_name = "ubuntu-jammy-k3s-leader-{{timestamp}}"
+  name = "k3s-leader"
+  source "proxmox-clone.k3s" {
+    template_name = "${local.template_prefix}-leader-${var.build_time}"
   }
 
   provisioner "ansible-local" {
@@ -143,21 +155,25 @@ build {
     extra_arguments = [
       "-e", "packer_image_type=${build.name}",
     ]
-    galaxy_file    = "ansible/requirements.yml"
-    galaxy_command = "~${build.User}/.local/bin/ansible-galaxy"
-    group_vars     = "ansible/vars/${build.name}"
+    galaxy_file      = "ansible/requirements.yml"
+    galaxy_command   = "~${build.User}/.local/bin/ansible-galaxy"
+    group_vars       = "ansible/vars/k3s"
+    inventory_groups = ["k3s_leader"]
   }
 
   post-processor "manifest" {
-    output = "manifests/packer-k3s.json"
+    output     = "manifests/packer-k3s.json"
     strip_path = true
+    custom_data = {
+      template_name = "${local.template_prefix}-leader-${var.build_time}"
+    }
   }
 }
 
 build {
-  name    = "k3s-agent"
-  source "proxmox-clone.docker" {
-    template_name = "ubuntu-jammy-k3s-agent-{{timestamp}}"
+  name = "k3s-agent"
+  source "proxmox-clone.k3s" {
+    template_name = "${local.template_prefix}-agent-${var.build_time}"
   }
 
   provisioner "ansible-local" {
@@ -172,13 +188,17 @@ build {
     extra_arguments = [
       "-e", "packer_image_type=${build.name}",
     ]
-    galaxy_file    = "ansible/requirements.yml"
-    galaxy_command = "~${build.User}/.local/bin/ansible-galaxy"
-    group_vars     = "ansible/vars/${build.name}"
+    galaxy_file      = "ansible/requirements.yml"
+    galaxy_command   = "~${build.User}/.local/bin/ansible-galaxy"
+    group_vars       = "ansible/vars/k3s"
+    inventory_groups = ["k3s_agent"]
   }
 
   post-processor "manifest" {
-    output = "manifests/packer-k3s.json"
+    output     = "manifests/packer-k3s.json"
     strip_path = true
+    custom_data = {
+      template_name = "${local.template_prefix}-agent-${var.build_time}"
+    }
   }
 }

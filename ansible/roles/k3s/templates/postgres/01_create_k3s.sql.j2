@@ -1,0 +1,6 @@
+CREATE USER {{ postgres_k3s_user }} WITH PASSWORD '{{ postgres_k3s_password }}';
+CREATE DATABASE {{ postgres_k3s_database }} WITH OWNER {{ postgres_k3s_user }} ENCODING 'UTF8';
+GRANT ALL PRIVILEGES ON DATABASE {{ postgres_k3s_database }} TO {{ postgres_k3s_user }};
+GRANT USAGE ON SCHEMA public TO {{ postgres_k3s_user }};
+GRANT ALL PRIVILEGES ON ALL TABLES IN SCHEMA public TO {{ postgres_k3s_user }};
+GRANT ALL PRIVILEGES ON ALL SEQUENCES IN SCHEMA public TO {{ postgres_k3s_user }};

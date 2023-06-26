@@ -1,6 +1,73 @@
 ---
 
+# Read hosts from the Terraform outputs.
+- hosts: localhost
+  tags: [always]
+  tasks:
+  - name: Read Terraform outputs
+    set_fact:
+      _terraform_outputs: "{{ lookup('cloud.terraform.tf_output', project_path=tf_project_path) }}"
+      tf_project_path: "{{ tf_project_path }}"
+    vars:
+      tf_project_path: "{{ (playbook_dir, '..', '..', 'terraform', 'clusters')|path_join }}"
+  
+  - name: Add k3s leaders
+    add_host:
+      name: "{{ item['name'] }}"
+      groups: [k3s, k3s_leaders]
+      ansible_host: "{{ item['ip'] }}"
+      ansible_user: "{{ item['user'] }}"
+      ansible_python_interpreter: /usr/bin/python3
+      tf_project_path: "{{ tf_project_path }}"
+      tf_state_outputs: "{{ _terraform_outputs }}"
+    loop: "{{ _terraform_outputs['k3s_leaders_inventory']['value'] }}"
+    changed_when: false
+
+  - name: Add k3s workers
+    add_host:
+      name: "{{ item['name'] }}"
+      groups: [k3s, k3s_workers, "k3s_workers_{{ item['worker_pool'] }}"]
+      ansible_host: "{{ item['ip'] }}"
+      ansible_user: "{{ item['user'] }}"
+      ansible_python_interpreter: /usr/bin/python3
+      tf_project_path: "{{ tf_project_path }}"
+      tf_state_outputs: "{{ _terraform_outputs }}"
+    loop: "{{ _terraform_outputs['k3s_workers_inventory']['value'] }}"
+    changed_when: false
+
+  - name: Add k3s support
+    add_host:
+      name: "{{ item['name'] }}"
+      groups: [k3s_support]
+      ansible_host: "{{ item['ip'] }}"
+      ansible_user: "{{ item['user'] }}"
+      ansible_python_interpreter: /usr/bin/python3
+      tf_project_path: "{{ tf_project_path }}"
+      tf_state_outputs: "{{ _terraform_outputs }}"
+    loop: "{{ _terraform_outputs['k3s_support_inventory']['value'] }}"
+    changed_when: false
+
+- hosts: k3s_support
+  become: yes
+  tags: [support]
+  roles:
+  - role: k3s
+    vars:
+      k3s_mode: support
+
+  post_tasks:
+  - name: Print support node address
+    debug:
+      msg: "Support node is available at {{ hostvars[groups['k3s_support'][0]]['ansible_host'] }}"
+
 - hosts: all
+  become: yes
+  roles:
+  - role: artis3n.tailscale
+    vars:
+      verbose: true
+
+- hosts: all:!k3s_support
   become: yes
   roles:
   - role: xanmanning.k3s
@@ -8,8 +75,37 @@
       k3s_become: true
       k3s_state: installed
       k3s_release_version: false
-      # TODO: Need a way to "service discover" the leader later.
-      k3s_registration_address: ~
+      k3s_registration_address: "{{ hostvars[groups['k3s_support'][0]]['ansible_host'] }}"
       k3s_service_requires:
       - tailscaled.service
       - docker.service
+      - cloud-final.service
+
+- hosts: "{{ groups['k3s_leaders'][0] }}"
+  become: yes
+  tasks:
+  - name: Fetch kubeconfig
+    ansible.builtin.slurp:
+      src: "/etc/rancher/k3s/k3s.yaml"
+    register: kubeconfig
+
+  - name: Make local .kube dir
+    become: no
+    delegate_to: localhost
+    ansible.builtin.file:
+      path: "~/.kube"
+      state: directory
+      mode: 0700
+      recurse: true
+
+  - name: Add local kubectl context
+    become: no
+    delegate_to: localhost
+    ansible.builtin.copy:
+      content: "{{ kubeconfig['content'] | b64decode | regex_replace('https://127.0.0.1', 'https://' + support_address) }}"
+      dest: "~/.kube/config-{{ inventory_hostname }}"
+      mode: 0600
+    vars:
+      support_address: "{{ hostvars[groups['k3s_support'][0]]['ansible_host'] }}"
+    when:
+    - kubeconfig is success
