@@ -6,3 +6,4 @@ netdata_use_nightly_channel: false
 netdata_send_telemetry: true
 netdata_cloud_claim_token: ""
 netdata_cloud_room_ids: []
+netdata_wipe_identity: false

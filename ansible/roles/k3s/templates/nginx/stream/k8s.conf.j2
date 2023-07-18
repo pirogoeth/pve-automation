@@ -4,19 +4,29 @@
 upstream k3s_nodes_ingress_http {
     {% for host in k3s_workers %}
     server {{ host["ansible_host"] }}:80;
-    {% endfor %}
+    {%- endfor %}
 }
 
 upstream k3s_nodes_ingress_https {
     {% for host in k3s_workers %}
     server {{ host["ansible_host"] }}:443;
-    {% endfor %}
+    {%- endfor %}
 }
 
 upstream k3s_servers_control_plane {
     {% for host in k3s_leaders %}
     server {{ host["ansible_host"] }}:6443;
-    {% endfor %}
+    {%- endfor %}
+}
+
+server {
+    listen 80;
+    proxy_pass k3s_nodes_ingress_http;
+}
+
+server {
+    listen 443;
+    proxy_pass k3s_nodes_ingress_https;
 }
 
 server {

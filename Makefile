@@ -45,7 +45,7 @@ upstream/ubuntu:
 		$${FORCE}
 
 manifests/packer-base.json: #> Build a packer image+manifest for the Ubuntu template.
-manifests/packer-base.json: ansible/playbooks/base.yml ansible/roles/base/**/* ansible/vars/base/*.yml
+manifests/packer-base.json: ansible/playbooks/base.yml ansible/roles/base/**/* ansible/inventory/group_vars/packer_*.yml
 manifests/packer-base.json: packer/base.pkr.hcl packer/vars/base.hcl
 	mkdir -p manifests
 	packer build \
@@ -55,7 +55,7 @@ manifests/packer-base.json: packer/base.pkr.hcl packer/vars/base.hcl
 
 manifests/packer-docker.json: #> Build a packer image+manifest for the Docker template.
 manifests/packer-docker.json: manifests/packer-base.json
-manifests/packer-docker.json: ansible/playbooks/docker.yml ansible/roles/docker/**/* ansible/vars/docker/*.yml
+manifests/packer-docker.json: ansible/playbooks/docker.yml ansible/roles/docker/**/* ansible/inventory/group_vars/packer_*.yml
 manifests/packer-docker.json: packer/docker.pkr.hcl packer/vars/docker.hcl
 	mkdir -p manifests
 	packer build \
@@ -68,7 +68,7 @@ manifests/packer-docker.json: packer/docker.pkr.hcl packer/vars/docker.hcl
 manifests/packer-k3s.json: #> Build a packer image+manifest for the K3s template.
 manifests/packer-k3s.json: #> Parallelized builds are disabled here due to a race condition in the builder.
 manifests/packer-k3s.json: manifests/packer-docker.json
-manifests/packer-k3s.json: ansible/playbooks/k3s.yml ansible/roles/k3s/**/* ansible/vars/k3s/*.yml
+manifests/packer-k3s.json: ansible/playbooks/k3s.yml ansible/roles/k3s/**/* ansible/inventory/group_vars/packer_*.yml
 manifests/packer-k3s.json: packer/k3s.pkr.hcl packer/vars/k3s.hcl
 	mkdir -p manifests
 	packer build \
@@ -81,7 +81,7 @@ manifests/packer-k3s.json: packer/k3s.pkr.hcl packer/vars/k3s.hcl
 
 manifests/packer-buildkite.json: #> Build a packer image+manifest for the Buildkite template.
 manifests/packer-buildkite.json: manifests/packer-docker.json
-manifests/packer-buildkite.json: ansible/playbooks/buildkite.yml ansible/roles/buildkite/**/* ansible/vars/buildkite/*.yml
+manifests/packer-buildkite.json: ansible/playbooks/buildkite.yml ansible/roles/buildkite/**/* ansible/inventory/group_vars/packer_*.yml
 manifests/packer-buildkite.json: packer/buildkite.pkr.hcl packer/vars/buildkite.hcl
 	mkdir -p manifests
 	packer build \

@@ -155,10 +155,10 @@ build {
     extra_arguments = [
       "-e", "packer_image_type=${build.name}",
     ]
+    inventory_groups = ["packer_${build.name}", "k3s_leader"]
     galaxy_file      = "ansible/requirements.yml"
     galaxy_command   = "~${build.User}/.local/bin/ansible-galaxy"
-    group_vars       = "ansible/vars/k3s"
-    inventory_groups = ["k3s_leader"]
+    group_vars       = "ansible/inventory/group_vars"
   }
 
   post-processor "manifest" {
@@ -188,10 +188,10 @@ build {
     extra_arguments = [
       "-e", "packer_image_type=${build.name}",
     ]
+    inventory_groups = ["packer_${build.name}", "k3s_agent"]
     galaxy_file      = "ansible/requirements.yml"
     galaxy_command   = "~${build.User}/.local/bin/ansible-galaxy"
-    group_vars       = "ansible/vars/k3s"
-    inventory_groups = ["k3s_agent"]
+    group_vars       = "ansible/inventory/group_vars"
   }
 
   post-processor "manifest" {

@@ -24,8 +24,12 @@
   - /opt/k3s-postgres-admin/conf
   - /opt/k3s-postgres-admin/data
   - /opt/k3s-npm/custom
+  - /opt/k3s-nginx/cache
+  - /opt/k3s-nginx/conf.d
+  - /opt/k3s-nginx/conf.d/http
+  - /opt/k3s-nginx/conf.d/stream
 
-- name: Create empty files
+- name: Create empty files for pgadmin4
   copy:
     content: ""
     dest: "{{ item.path }}"
@@ -48,7 +52,7 @@
     - src: postgres/01_create_k3s.sql.j2
       dest: 01_create_k3s.sql
 
-- name: Set up postgres container
+- name: Create postgres container
   community.docker.docker_container:
     name: k3s-postgres
     image: "postgres:{{ postgres_version }}"
@@ -62,7 +66,7 @@
     - /opt/k3s-postgres/data:/var/lib/postgresql/data
     - /opt/k3s-postgres/init:/docker-entrypoint-initdb.d:ro
 
-- name: Set up pgadmin4 container
+- name: Create pgadmin4 container
   community.docker.docker_container:
     pull: true
     name: k3s-postgres-admin
@@ -81,35 +85,45 @@
     - /opt/k3s-postgres-admin/conf/servers.json:/pgadmin4/servers.json
     - /opt/k3s-postgres-admin/data:/var/lib/pgadmin
 
-- name: Write nginx-proxy-manager custom templates
+- name: Write nginx http config templates
   template:
-    src: "{{ item.src }}"
-    dest: "/opt/k3s-npm/custom/{{ item.dest }}"
+    src: "nginx/http/{{ item.src }}"
+    dest: "/opt/k3s-nginx/conf.d/http/{{ item.dest }}"
     mode: 0644
   notify:
-  - Restart nginx-proxy-manager
-  loop:
-  - src: nginx-proxy-manager/root.conf.j2
-    dest: root.conf
-  - src: nginx-proxy-manager/events.conf.j2
-    dest: events.conf
-  - src: nginx-proxy-manager/stream.conf.j2
-    dest: stream.conf
+  - Restart nginx
+  loop: []
 
-- name: Set up nginx-proxy-manager container
+- name: Write nginx stream config templates
+  template:
+    src: "nginx/stream/{{ item.src }}"
+    dest: "/opt/k3s-nginx/conf.d/stream/{{ item.dest }}"
+    mode: 0644
+  notify:
+  - Restart nginx
+  loop:
+  - src: k8s.conf.j2
+    dest: k8s.conf
+
+- name: Write nginx config
+  template:
+    src: "nginx/nginx.conf.j2"
+    dest: "/opt/k3s-nginx/nginx.conf"
+    mode: 0644
+  notify:
+  - Restart nginx
+
+- name: Create nginx container
   community.docker.docker_container:
-    name: k3s-nginx-proxy-manager
-    image: "{{ nginx_proxy_manager_image }}:{{ nginx_proxy_manager_version }}"
+    name: k3s-nginx
+    image: "nginx:{{ nginx_version }}"
+    pull: true
     restart_policy: always
-    env:
-      DB_SQLITE_FILE: "/data/database.sqlite"
     ports:
     - "0.0.0.0:80:80"
-    - "0.0.0.0:81:81"
     - "0.0.0.0:443:443"
     - "0.0.0.0:6443:6443"
     volumes:
-    - /opt/k3s-npm/database.sqlite:/data/database.sqlite
-    - /opt/k3s-npm/custom:/data/nginx/custom
-
-
+    - /opt/k3s-nginx/nginx.conf:/etc/nginx/nginx.conf:ro
+    - /opt/k3s-nginx/conf.d:/etc/nginx/conf.d:ro
+    - /opt/k3s-nginx/cache:/var/cache/nginx

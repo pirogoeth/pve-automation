@@ -10,10 +10,13 @@
 
 - name: Get GOPATH
   command: "go env GOPATH"
+  changed_when: false
   register: GOPATH
 
 - name: Build serf
   command: "go install -v github.com/hashicorp/serf/cmd/serf@latest"
+  args:
+    creates: "{{ GOPATH.stdout }}/bin/serf"
 
 - name: Install serf
   copy:

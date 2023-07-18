@@ -7,4 +7,4 @@
     vars:
       verbose: true
       tailscale_up_skip: true
-  - role: "{{ packer_image_type }}"
+  - role: "{{ packer_image_type|default('base') }}"

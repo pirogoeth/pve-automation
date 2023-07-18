@@ -10,3 +10,11 @@
     name: serf.service
     state: reloaded
   when: packer_build_type is not defined
+
+- name: Restart netdata service
+  systemd:
+    name: netdata.service
+    state: restarted
+  when:
+  - packer_build_type is not defined
+  - netdata_start_after_install

@@ -47,9 +47,15 @@
     loop: "{{ _terraform_outputs['k3s_support_inventory']['value'] }}"
     changed_when: false
 
+- hosts: all
+  become: yes
+  tags: [base]
+  roles:
+  - role: base
+
 - hosts: k3s_support
   become: yes
-  tags: [support]
+  tags: [k3s, support]
   roles:
   - role: k3s
     vars:
@@ -62,6 +68,7 @@
 
 - hosts: all
   become: yes
+  tags: [base, tailscale]
   roles:
   - role: artis3n.tailscale
     vars:
@@ -69,6 +76,7 @@
 
 - hosts: all:!k3s_support
   become: yes
+  tags: [k3s]
   roles:
   - role: xanmanning.k3s
     vars:
@@ -98,7 +106,7 @@
       mode: 0700
       recurse: true
 
-  - name: Add local kubectl context
+  - name: Add local kubectl config
     become: no
     delegate_to: localhost
     ansible.builtin.copy:

@@ -13,5 +13,4 @@ pgadmin_version: 6
 pgadmin_default_email: ~
 pgadmin_default_password: ~
 
-nginx_proxy_manager_image: jc21/nginx-proxy-manager
-nginx_proxy_manager_version: latest
+nginx_version: 1.25

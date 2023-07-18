@@ -22,6 +22,17 @@
     {% endif %}{% if netdata_cloud_room_ids %}
     --claim-rooms {{ netdata_cloud_room_ids|join(',') }}
     {% endif %}
+  args:
+    creates: /usr/sbin/netdata
+  notify:
+  - Restart netdata service
+
+- name: Ensure claim is absent
+  file:
+    path: /var/lib/netdata/registry/netdata.public.unique.id
+    state: absent
+  when:
+  - (packer_build_type is defined) or netdata_wipe_identity
 
 - name: Enable netdata service
   systemd:

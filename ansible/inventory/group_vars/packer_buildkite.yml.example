@@ -1,0 +1,4 @@
+---
+
+buildkite_agent_allow_service_startup: false
+buildkite_agent_token: "BiVZ6eoQ8kWPFHrzE4o6M0jx5fnE8xOf"

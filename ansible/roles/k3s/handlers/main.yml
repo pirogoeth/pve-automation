@@ -1,6 +1,6 @@
 ---
 
-- name: Restart nginx-proxy-manager
+- name: Restart nginx
   community.docker.docker_container:
-    name: k3s-nginx-proxy-manager
+    name: k3s-nginx
     restart: true

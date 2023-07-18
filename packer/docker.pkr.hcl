@@ -152,9 +152,10 @@ build {
     extra_arguments = [
       "-e", "packer_image_type=${build.name}",
     ]
-    galaxy_file    = "ansible/requirements.yml"
-    galaxy_command = "~${build.User}/.local/bin/ansible-galaxy"
-    group_vars     = "ansible/vars/${build.name}"
+    inventory_groups = ["packer_${build.name}"]
+    galaxy_file      = "ansible/requirements.yml"
+    galaxy_command   = "~${build.User}/.local/bin/ansible-galaxy"
+    group_vars       = "ansible/inventory/group_vars"
   }
 
   post-processor "manifest" {
