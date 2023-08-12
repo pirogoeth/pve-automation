@@ -1,0 +1,17 @@
+---
+apiVersion: helm.cattle.io/v1
+kind: HelmChartConfig
+metadata:
+  name: traefik
+  namespace: kube-system
+spec:
+  valuesContent: |-
+    ports:
+      web:
+        proxyProtocol:
+          trustedIPs:
+          - 10.100.10.0/24
+      websecure:
+        proxyProtocol:
+          trustedIPs:
+          - 10.100.10.0/24
