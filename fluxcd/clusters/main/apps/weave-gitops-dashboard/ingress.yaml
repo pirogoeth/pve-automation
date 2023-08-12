@@ -1,0 +1,18 @@
+---
+apiVersion: networking.k8s.io/v1
+kind: Ingress
+metadata:
+  name: weave-gitops-dashboard
+  namespace: flux-system
+spec:
+  rules:
+  - host: gitops.main.k8s.2811rrt.net
+    http:
+      paths:
+      - path: /
+        pathType: Prefix
+        backend:
+          service:
+            name: weave-gitops-dashboard
+            port:
+              number: 9001
