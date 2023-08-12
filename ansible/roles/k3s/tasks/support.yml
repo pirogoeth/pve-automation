@@ -22,10 +22,10 @@
   - /opt/k3s-postgres/data
   - /opt/k3s-postgres/init
   - /opt/k3s-postgres-admin/conf
-  - /opt/k3s-postgres-admin/data
   - /opt/k3s-npm/custom
   - /opt/k3s-nginx/cache
   - /opt/k3s-nginx/conf.d
+  - /opt/k3s-nginx/conf.d/fragments
   - /opt/k3s-nginx/conf.d/http
   - /opt/k3s-nginx/conf.d/stream
 
@@ -35,6 +35,7 @@
     dest: "{{ item.path }}"
     owner: "{{ item.owner|default('root') }}"
     group: "{{ item.group|default('root') }}"
+    force: false
   loop:
   - path: /opt/k3s-postgres-admin/conf/config_local.py
     owner: 5050
@@ -42,6 +43,14 @@
   - path: /opt/k3s-postgres-admin/conf/servers.json
     owner: 5050
     group: 5050
+
+- name: Change ownership of pgadmin4 data dir
+  file:
+    path: "/opt/k3s-postgres-admin/data"
+    owner: 5050
+    group: 5050
+    recurse: yes
+    state: directory
 
 - name: Write postgres initializer scripts
   template:
@@ -72,18 +81,28 @@
     name: k3s-postgres-admin
     image: "{{ pgadmin_image }}:{{ pgadmin_version }}"
     restart_policy: always
-    ports:
-    - "127.0.0.1:5050:5050"
     env:
       PGADMIN_DEFAULT_EMAIL: "{{ pgadmin_default_email }}"
       PGADMIN_DEFAULT_PASSWORD: "{{ pgadmin_default_password }}"
       PGADMIN_LISTEN_PORT: "5050"
+      SCRIPT_NAME: "/pgadmin"
     links:
     - k3s-postgres:postgres
     volumes:
     - /opt/k3s-postgres-admin/conf/config_local.py:/pgadmin4/config_local.py
     - /opt/k3s-postgres-admin/conf/servers.json:/pgadmin4/servers.json
     - /opt/k3s-postgres-admin/data:/var/lib/pgadmin
+
+- name: Write nginx config fragment templates
+  template:
+    src: "nginx/fragments/{{ item.src }}"
+    dest: "/opt/k3s-nginx/conf.d/fragments/{{ item.dest }}"
+    mode: 0644
+  notify:
+  - Restart nginx
+  loop:
+  - src: proxy_options.conf
+    dest: proxy_options.conf
 
 - name: Write nginx http config templates
   template:
@@ -92,7 +111,9 @@
     mode: 0644
   notify:
   - Restart nginx
-  loop: []
+  loop:
+  - src: default.conf.j2
+    dest: default.conf
 
 - name: Write nginx stream config templates
   template:
@@ -121,8 +142,11 @@
     restart_policy: always
     ports:
     - "0.0.0.0:80:80"
+    - "0.0.0.0:8080:8080"
     - "0.0.0.0:443:443"
     - "0.0.0.0:6443:6443"
+    links:
+    - k3s-postgres-admin:pgadmin
     volumes:
     - /opt/k3s-nginx/nginx.conf:/etc/nginx/nginx.conf:ro
     - /opt/k3s-nginx/conf.d:/etc/nginx/conf.d:ro

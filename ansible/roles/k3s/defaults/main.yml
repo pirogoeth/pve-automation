@@ -9,7 +9,7 @@ postgres_k3s_password: ~
 postgres_k3s_database: k3s
 
 pgadmin_image: "dpage/pgadmin4"
-pgadmin_version: 6
+pgadmin_version: 7
 pgadmin_default_email: ~
 pgadmin_default_password: ~
 

@@ -1,0 +1,19 @@
+upstream pgadmin {
+    server pgadmin:5050;
+    keepalive 2;
+}
+
+server {
+    listen 8080;
+    server_name _;
+    root /var/www/html/public;
+
+    location / {
+      return 419;
+    }
+
+    location /pgadmin/ {
+        include /etc/nginx/conf.d/fragments/proxy_options.conf;
+        proxy_pass http://pgadmin;
+    }
+}
