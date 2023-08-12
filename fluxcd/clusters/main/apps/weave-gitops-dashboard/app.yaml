@@ -38,4 +38,4 @@ spec:
     adminUser:
       create: true
       createSecret: false
-
+      username: sean
