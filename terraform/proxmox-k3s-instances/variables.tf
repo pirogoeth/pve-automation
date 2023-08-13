@@ -66,12 +66,19 @@ variable "proxmox_resource_pool" {
 
 variable "support_node_settings" {
   type = object({
-    cores          = optional(number, 2),
-    sockets        = optional(number, 1),
-    memory         = optional(number, 4096),
-    storage_type   = optional(string, "scsi"),
-    storage_id     = optional(string, "local-lvm"),
-    disk_size      = optional(string, "10G"),
+    cores        = optional(number, 2),
+    sockets      = optional(number, 1),
+    memory       = optional(number, 4096),
+    storage_type = optional(string, "scsi"),
+    storage_id   = optional(string, "local-lvm"),
+    disk_size    = optional(string, "10G"),
+    extra_disks = optional(list(object({
+      size    = string,
+      storage = optional(string, "local-lvm"),
+      type    = optional(string, "virtio"),
+      cache   = optional(string, "none"),
+      backup  = optional(number, 0),
+    })), []),
     user           = optional(string, "k3s"),
     db_name        = optional(string, "k3s"),
     db_user        = optional(string, "k3s"),
@@ -88,11 +95,18 @@ variable "leader_node_count" {
 
 variable "leader_node_settings" {
   type = object({
-    cores          = optional(number, 2),
-    sockets        = optional(number, 1),
-    memory         = optional(number, 4096),
-    storage_type   = optional(string, "scsi"),
-    storage_id     = optional(string, "local-lvm"),
+    cores        = optional(number, 2),
+    sockets      = optional(number, 1),
+    memory       = optional(number, 4096),
+    storage_type = optional(string, "scsi"),
+    storage_id   = optional(string, "local-lvm"),
+    extra_disks = optional(list(object({
+      size    = string,
+      storage = optional(string, "local-lvm"),
+      type    = optional(string, "virtio"),
+      cache   = optional(string, "none"),
+      backup  = optional(number, 0),
+    })), []),
     disk_size      = optional(string, "20G"),
     user           = optional(string, "k3s"),
     network_bridge = optional(string, "vmbr0"),
@@ -116,8 +130,15 @@ variable "node_pools" {
     storage_type = optional(string, "scsi"),
     storage_id   = optional(string, "local-lvm"),
     disk_size    = optional(string, "20G"),
-    user         = optional(string, "k3s"),
-    network_tag  = optional(number, -1),
+    extra_disks = optional(list(object({
+      size    = string,
+      storage = optional(string, "local-lvm"),
+      type    = optional(string, "virtio"),
+      cache   = optional(string, "none"),
+      backup  = optional(number, 0),
+    })), []),
+    user        = optional(string, "k3s"),
+    network_tag = optional(number, -1),
 
     template = optional(string),
 

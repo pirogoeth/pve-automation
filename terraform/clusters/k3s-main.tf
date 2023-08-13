@@ -94,6 +94,20 @@ module "k3s-main" {
       memory         = 4096
       user           = "ubuntu"
       disk_size      = "40G"
+      extra_disks = [
+        {
+          size    = "256G"
+          storage = "ext1"
+        },
+        {
+          size    = "256G"
+          storage = "ext2"
+        },
+        {
+          size    = "256G"
+          storage = "ext3"
+        },
+      ]
     },
     {
       name = "highmem"
@@ -107,6 +121,20 @@ module "k3s-main" {
       memory         = 16384
       user           = "ubuntu"
       disk_size      = "40G"
+      extra_disks = [
+        {
+          size    = "256G"
+          storage = "ext1"
+        },
+        {
+          size    = "256G"
+          storage = "ext2"
+        },
+        {
+          size    = "256G"
+          storage = "ext3"
+        },
+      ]
     }
   ]
 }

@@ -11,6 +11,7 @@ locals {
 resource "proxmox_vm_qemu" "k3s-support" {
   target_node = var.proxmox_node
   name        = "${join("-", [var.cluster_name, "support"])}.${var.domain_name}"
+  desc        = "K3s ${var.cluster_name} support node"
   os_type     = "cloud-init"
   agent       = 1
 
@@ -34,6 +35,17 @@ resource "proxmox_vm_qemu" "k3s-support" {
     size    = var.support_node_settings.disk_size
   }
 
+  dynamic "disk" {
+    for_each = var.support_node_settings.extra_disks
+    content {
+      type    = disk.value.type
+      storage = disk.value.storage
+      size    = disk.value.size
+      cache   = disk.value.cache
+      backup  = disk.value.backup
+    }
+  }
+
   network {
     bridge    = var.support_node_settings.network_bridge
     firewall  = true
@@ -50,7 +62,7 @@ resource "proxmox_vm_qemu" "k3s-support" {
       ciuser,
       cicustom,
       sshkeys,
-      disk,
+      disk[0],
       network
     ]
   }

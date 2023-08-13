@@ -33,6 +33,7 @@ resource "proxmox_vm_qemu" "k3s-worker" {
 
   target_node = var.proxmox_node
   name        = "${var.cluster_name}-${each.key}.${var.domain_name}"
+  desc        = "K3s ${var.cluster_name} worker ${each.key}"
   os_type     = "cloud-init"
   agent       = 1
 
@@ -56,6 +57,17 @@ resource "proxmox_vm_qemu" "k3s-worker" {
     size    = each.value.disk_size
   }
 
+  dynamic "disk" {
+    for_each = each.value.extra_disks
+    content {
+      type    = disk.value.type
+      storage = disk.value.storage
+      size    = disk.value.size
+      cache   = disk.value.cache
+      backup  = disk.value.backup
+    }
+  }
+
   network {
     bridge    = each.value.network_bridge
     firewall  = true
@@ -72,7 +84,7 @@ resource "proxmox_vm_qemu" "k3s-worker" {
       ciuser,
       cicustom,
       sshkeys,
-      disk,
+      disk[0],
       network
     ]
   }

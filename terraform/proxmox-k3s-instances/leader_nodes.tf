@@ -14,6 +14,7 @@ resource "proxmox_vm_qemu" "k3s-leader" {
   count       = var.leader_node_count
   target_node = var.proxmox_node
   name        = "${var.cluster_name}-leader-${count.index}.${var.domain_name}"
+  desc        = "K3s ${var.cluster_name} leader node ${count.index}"
   os_type     = "cloud-init"
   agent       = 1
 
@@ -38,6 +39,17 @@ resource "proxmox_vm_qemu" "k3s-leader" {
     size    = var.leader_node_settings.disk_size
   }
 
+  dynamic "disk" {
+    for_each = var.support_node_settings.extra_disks
+    content {
+      type    = disk.value.type
+      storage = disk.value.storage
+      size    = disk.value.size
+      cache   = disk.value.cache
+      backup  = disk.value.backup
+    }
+  }
+
   network {
     bridge    = var.leader_node_settings.network_bridge
     firewall  = true
@@ -54,7 +66,7 @@ resource "proxmox_vm_qemu" "k3s-leader" {
       ciuser,
       cicustom,
       sshkeys,
-      disk,
+      disk[0],
       network
     ]
   }
