@@ -7,10 +7,6 @@ metadata:
 apiVersion: source.toolkit.fluxcd.io/v1beta2
 kind: HelmRepository
 metadata:
-  annotations:
-  labels:
-    app.kubernetes.io/component: storage
-    app.kubernetes.io/name: longhorn
   name: longhorn
   namespace: longhorn-system
 spec:
@@ -21,7 +17,7 @@ spec:
 apiVersion: helm.toolkit.fluxcd.io/v2beta1
 kind: HelmRelease
 metadata:
-  name: longhorn-system-longhorn
+  name: longhorn
   namespace: longhorn-system
 spec:
   chart:
