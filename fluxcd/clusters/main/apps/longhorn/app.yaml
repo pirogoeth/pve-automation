@@ -26,6 +26,9 @@ spec:
         kind: HelmRepository
         name: longhorn
   interval: 1h0m0s
+  targetNamespace: longhorn-system
+  install:
+    createNamespace: true
   values:
     networkPolicies:
       enabled: true
