@@ -14,10 +14,10 @@ resources/*
 !resources/*.example
 !resources/README.md
 
-terraform/clusters/.terraform*
-terraform/clusters/plan
-terraform/clusters/terraform.tfstate*
-terraform/clusters/*.log
+terraform/*/.terraform*
+terraform/*/plan
+terraform/*/terraform.tfstate*
+terraform/*/*.log
 terraform/resources/*
 !terraform/resources/*.example
 !terraform/resources/README.md

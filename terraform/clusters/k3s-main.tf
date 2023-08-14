@@ -39,7 +39,7 @@ locals {
 }
 
 module "k3s-main" {
-  source = "../proxmox-k3s-instances"
+  source = "../modules/proxmox-k3s-instances"
 
   cluster_name = "k3s-main"
 
@@ -57,7 +57,7 @@ module "k3s-main" {
 
   network_gateway = "10.100.10.1"
   lan_subnet      = "10.100.10.0/24"
-  nameserver      = "10.100.0.6"
+  nameserver      = "10.100.0.11"
 
   support_node_settings = {
     cores          = 2

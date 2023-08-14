@@ -59,6 +59,10 @@ function usage() {
     usage::argument "-U" "PVE storage path to a cloud-init user config file (e.g., local:snippets/users.yml)" "snippet_path"
     usage::argument "-N" "Custom name for the final VM template" "name"
     usage::argument "-h" "Show this help message"
+    echo
+    echo "Example usage: ./create-ubuntu-template.sh -i 9001 -n pve-002 -r jammy -s current -m amd64 -t local -T local-lvm -F"
+    echo
+
 }
 
 function log() {
