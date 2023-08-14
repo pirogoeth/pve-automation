@@ -18,25 +18,12 @@ metadata:
   name: cluster-main
   namespace: flux-system
 spec:
-  interval: 10m0s
-  path: ./fluxcd/clusters/main
-  prune: true
-  sourceRef:
-    kind: GitRepository
-    name: pve-automation
----
-apiVersion: kustomize.toolkit.fluxcd.io/v1
-kind: Kustomization
-metadata:
-  name: cluster-main-secrets
-  namespace: flux-system
-spec:
   decryption:
     provider: sops
     secretRef:
       name: sops-age
   interval: 10m0s
-  path: ./fluxcd/clusters/main/secrets
+  path: ./fluxcd/clusters/main
   prune: true
   sourceRef:
     kind: GitRepository
