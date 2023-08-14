@@ -2,3 +2,6 @@
 
 - include_tasks: support.yml
   when: k3s_mode == "support"
+
+- include_tasks: packages.yml
+  when: k3s_mode != "support"
