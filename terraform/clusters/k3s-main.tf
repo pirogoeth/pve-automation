@@ -68,10 +68,10 @@ module "k3s-main" {
     network_tag    = 20
   }
 
-  leader_node_count = 2
+  leader_node_count = 1
   leader_node_settings = {
     cores          = 2
-    memory         = 4096
+    memory         = 8192
     user           = "ubuntu"
     disk_size      = "25G"
     network_bridge = "vmbr1"
@@ -84,14 +84,14 @@ module "k3s-main" {
   node_pools = [
     {
       name = "default"
-      size = 3
+      size = 2
       # 10.100.10.224 -> 10.100.10.239 (14 available IPs for nodes)
       subnet         = "10.100.10.224/28"
       network_bridge = "vmbr1"
       network_tag    = 20
       cores          = 4
       sockets        = 1
-      memory         = 4096
+      memory         = 16384
       user           = "ubuntu"
       disk_size      = "40G"
       extra_disks = [
@@ -118,7 +118,7 @@ module "k3s-main" {
       network_tag    = 20
       cores          = 4
       sockets        = 1
-      memory         = 16384
+      memory         = 32768
       user           = "ubuntu"
       disk_size      = "40G"
       extra_disks = [
