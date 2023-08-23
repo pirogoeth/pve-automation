@@ -47,19 +47,16 @@
     loop: "{{ _terraform_outputs['k3s_support_inventory']['value'] }}"
     changed_when: false
 
+- ansible.builtin.import_playbook: "base.yml"
+  tags: [base]
+  vars:
+    base_tailscale_up_skip: false
+
 - hosts: all
   become: yes
-  tags: [base]
-  roles:
-  - role: base
-
-- hosts: k3s_support
-  become: yes
-  tags: [k3s, support]
+  tags: [k3s, extras]
   roles:
   - role: k3s
-    vars:
-      k3s_mode: support
 
   post_tasks:
   - name: Print support node address

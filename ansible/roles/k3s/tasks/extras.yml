@@ -1,0 +1,17 @@
+---
+
+- name: Install linux-modules-extra
+  apt:
+    name: linux-modules-extra-{{ ansible_kernel }}
+    state: present
+
+- name: Load extra modules
+  modprobe:
+    name: "{{ item }}"
+    state: present
+    persistent: present
+  loop:
+  - uio
+  - uio_pci_generic
+  notify:
+  - Restart k3s

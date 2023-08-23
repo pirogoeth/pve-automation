@@ -4,3 +4,8 @@
   community.docker.docker_container:
     name: k3s-nginx
     restart: true
+
+- name: Restart k3s
+  systemd:
+    name: k3s
+    state: restarted

@@ -6,5 +6,5 @@
   - role: artis3n.tailscale
     vars:
       verbose: true
-      tailscale_up_skip: true
+      tailscale_up_skip: "{{ base_tailscale_up_skip|default(true) }}"
   - role: "{{ packer_image_type|default('base') }}"

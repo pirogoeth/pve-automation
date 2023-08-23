@@ -1,6 +1,0 @@
----
-
-- name: Install linux-modules-extra
-  apt:
-    name: linux-modules-extra-{{ ansible_kernel }}
-    state: present
