@@ -11,6 +11,8 @@ spec:
   secretRef:
     name: flux-system
   url: ssh://git@github.com/pirogoeth/pve-automation
+  ignore: |
+    /**/.encrypt_hook.ya?ml
 ---
 apiVersion: kustomize.toolkit.fluxcd.io/v1
 kind: Kustomization
