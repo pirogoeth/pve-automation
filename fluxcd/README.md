@@ -58,6 +58,37 @@ $ flux create kustomization pve-automation-secrets --source=pve-automation --pat
 ◎ waiting for Kustomization reconciliation
 ✔ Kustomization pve-automation-secrets is ready
 ✔ applied revision main@sha1:978fe3f42761c4377993576e2c9f25bc5ce26079
+
+# Later, rebootstrapped to enable the image-reflector and image-automation controller
+seanj@pve-automation:~/pve-automation$ kubectl delete -n flux-system secret/flux-system
+secret "flux-system" deleted
+seanj@pve-automation:~/pve-automation$ flux bootstrap github --components-extra=image-reflector-controller,image-automation-controller --owner=pirogoeth --repository=pve-automation --branch=main --path=./fluxcd/flux-system --read-write-key --personal
+► connecting to github.com
+► cloning branch "main" from Git repository "https://github.com/pirogoeth/pve-automation.git"
+✔ cloned repository
+► generating component manifests
+✔ generated component manifests
+✔ committed sync manifests to "main" ("c199243897899abfe11988371a31104a45740ed6")
+► pushing component manifests to "https://github.com/pirogoeth/pve-automation.git"
+✔ reconciled components
+► determining if source secret "flux-system/flux-system" exists
+✔ source secret up to date
+► generating sync manifests
+✔ generated sync manifests
+✔ committed sync manifests to "main" ("b71af6bb41703ae90c41e612d36f0efbdfb1b80f")
+► pushing sync manifests to "https://github.com/pirogoeth/pve-automation.git"
+► applying sync manifests
+✔ reconciled sync configuration
+◎ waiting for Kustomization "flux-system/flux-system" to be reconciled
+✔ Kustomization reconciled successfully
+► confirming components are healthy
+✔ helm-controller: deployment ready
+✔ image-automation-controller: deployment ready
+✔ image-reflector-controller: deployment ready
+✔ kustomize-controller: deployment ready
+✔ notification-controller: deployment ready
+✔ source-controller: deployment ready
+✔ all components are healthy
 ```
 
 ## To-do
