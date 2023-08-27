@@ -1,0 +1,43 @@
+---
+apiVersion: source.toolkit.fluxcd.io/v1beta2
+kind: HelmRepository
+metadata:
+  name: windmill
+  namespace: flux-system
+spec:
+  interval: 1h0m0s
+  type: default
+  url: https://windmill-labs.github.io/windmill-helm-charts/
+---
+apiVersion: helm.toolkit.fluxcd.io/v2beta1
+kind: HelmRelease
+metadata:
+  name: windmill
+  namespace: flux-system
+spec:
+  chart:
+    spec:
+      chart: windmill
+      sourceRef:
+        kind: HelmRepository
+        name: windmill
+  interval: 1h0m0s
+  targetNamespace: windmill
+  install:
+    createNamespace: true
+  values:
+    windmill:
+      baseDomain: windmill.main.k8s.2811rrt.net
+      baseProtocol: http
+      appReplicas: 1
+      workerReplicas: 2
+      lspReplicas: 1
+    postgresql:
+      enabled: true
+    minio:
+      enabled: true
+    ingress:
+      enabled: true
+      className: traefik
+    enterprise:
+      enabled: false
