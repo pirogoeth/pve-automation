@@ -29,12 +29,10 @@ spec:
     windmill:
       baseDomain: windmill.main.k8s.2811rrt.net
       baseProtocol: http
-      appReplicas: 1
+      appReplicas: 2
       workerReplicas: 2
       lspReplicas: 1
       databaseUrl: postgres://postgres:windmill@windmill-postgresql/windmill?sslmode=disable
-    postgresql:
-      enabled: true
     minio:
       enabled: true
     ingress:
