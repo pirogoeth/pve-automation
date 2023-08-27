@@ -32,6 +32,7 @@ spec:
       appReplicas: 1
       workerReplicas: 2
       lspReplicas: 1
+      databaseUrl: postgres://postgres:windmill@windmill-postgresql/windmill?sslmode=disable
     postgresql:
       enabled: true
     minio:
