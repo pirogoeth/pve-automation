@@ -53,4 +53,11 @@ spec:
   targetNamespace: postgres-operator
   install:
     createNamespace: true
-  values: {}
+  values:
+    ingress:
+      enabled: true
+      ingressClassName: "traefik"
+      hosts:
+      - host: pg-operator.main.k8s.2811rrt.net
+        paths:
+        - /
