@@ -32,7 +32,7 @@ spec:
         kind: HelmRepository
         name: postgres-operator-charts
   interval: 1h0m0s
-  targetNamespace: windmill
+  targetNamespace: postgres-operator
   install:
     createNamespace: true
   values: {}
@@ -50,7 +50,7 @@ spec:
         kind: HelmRepository
         name: postgres-operator-ui-charts
   interval: 1h0m0s
-  targetNamespace: windmill
+  targetNamespace: postgres-operator
   install:
     createNamespace: true
   values: {}
