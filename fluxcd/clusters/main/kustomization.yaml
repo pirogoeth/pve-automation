@@ -3,6 +3,7 @@ kind: Kustomization
 resources:
 - clickhouse-operator.yaml
 - k8s-dashboard.yaml
+- local-ai.yaml
 - longhorn.yaml
 - postgres-operator.yaml
 - secrets/weave-gitops-dashboard.admin-user-creds.secret.yaml

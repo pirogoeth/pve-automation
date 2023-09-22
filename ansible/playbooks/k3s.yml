@@ -30,6 +30,7 @@
       ansible_host: "{{ item['ip'] }}"
       ansible_user: "{{ item['user'] }}"
       ansible_python_interpreter: /usr/bin/python3
+      k3s_worker_pool: "{{ item['worker_pool'] }}"
       tf_project_path: "{{ tf_project_path }}"
       tf_state_outputs: "{{ _terraform_outputs }}"
     loop: "{{ _terraform_outputs['k3s_workers_inventory']['value'] }}"

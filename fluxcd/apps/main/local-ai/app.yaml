@@ -1,0 +1,53 @@
+---
+apiVersion: source.toolkit.fluxcd.io/v1beta2
+kind: HelmRepository
+metadata:
+  name: go-skynet
+  namespace: flux-system
+spec:
+  interval: 1h0m0s
+  type: default
+  url: https://go-skynet.github.io/helm-charts/
+---
+apiVersion: helm.toolkit.fluxcd.io/v2beta1
+kind: HelmRelease
+metadata:
+  name: localai
+  namespace: flux-system
+spec:
+  chart:
+    spec:
+      chart: local-ai
+      sourceRef:
+        kind: HelmRepository
+        name: windmill
+  interval: 1h0m0s
+  targetNamespace: local-ai
+  install:
+    createNamespace: true
+  values:
+    replicaCount: 1
+    deployment:
+      env:
+        threads: 4
+        context_size: 1024
+    nodeSelector:
+      node-role: worker
+      node-type: highmem
+    models:
+      persistence:
+        pvc:
+          enabled: true
+          size: 64Gi
+          accessModes:
+          - ReadWriteOnce
+          storageClass: "longhorn"
+    ingress:
+      enabled: true
+      className: traefik
+      hosts:
+        - host: localai.main.k8s.2811rrt.net
+          paths:
+            - path: /
+              pathType: Prefix
+      tls: []

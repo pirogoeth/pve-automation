@@ -33,6 +33,9 @@ spec:
       workerReplicas: 2
       lspReplicas: 1
       databaseUrl: postgres://postgres:windmill@windmill-postgresql/windmill?sslmode=disable
+    postgresql:
+      enabled: true
+      storageClass: longhorn
     minio:
       enabled: true
     ingress:
