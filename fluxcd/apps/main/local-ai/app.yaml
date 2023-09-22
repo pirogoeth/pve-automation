@@ -20,7 +20,7 @@ spec:
       chart: local-ai
       sourceRef:
         kind: HelmRepository
-        name: windmill
+        name: go-skynet
   interval: 1h0m0s
   targetNamespace: local-ai
   install:
