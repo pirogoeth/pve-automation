@@ -1,9 +1,14 @@
 ---
 
-- name: Install linux-modules-extra
+- name: Install packages
   apt:
-    name: linux-modules-extra-{{ ansible_kernel }}
+    name: "{{ item }}"
     state: present
+  loop:
+  - linux-modules-extra-{{ ansible_kernel }}
+  - nfs-common
+  - open-iscsi
+  - xfsprogs
 
 - name: Load extra modules
   modprobe:
@@ -13,5 +18,14 @@
   loop:
   - uio
   - uio_pci_generic
+  - iscsi_tcp
+  notify:
+  - Restart k3s
+
+- name: Start/enable iSCSI service
+  systemd:
+    name: iscsid
+    state: started
+    enabled: true
   notify:
   - Restart k3s

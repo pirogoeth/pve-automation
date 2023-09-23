@@ -1,0 +1,29 @@
+---
+
+- name: Make longhorn volume directory
+  file:
+    path: "{{ k3s_longhorn_volume_directory }}"
+    owner: root
+    group: root
+    recurse: yes
+    state: directory
+
+- name: Create filesystems on block devices
+  community.general.filesystem:
+    dev: "{{ item }}"
+    fstype: xfs
+    resizefs: true
+    state: present
+  loop: "{{ k3s_longhorn_data_disks }}"
+
+- name: Mount filesystems in longhorn volume directory
+  ansible.posix.mount:
+    path: "{{ k3s_longhorn_volume_directory }}/disk{{ idx }}"
+    src: "{{ item }}"
+    boot: true
+    fstype: xfs
+    opts: defaults
+    state: mounted
+  loop: "{{ k3s_longhorn_data_disks }}"
+  loop_control:
+    index_var: idx

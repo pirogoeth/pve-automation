@@ -3,6 +3,13 @@
 - include_tasks: support.yml
   when: k3s_mode == "support"
 
+- include_tasks: disks.yml
+  when:
+  - k3s_mode != "support"
+  - k3s_longhorn_data_disks is defined
+  - k3s_longhorn_volume_directory is defined
+  tags: [disks]
+
 - include_tasks: extras.yml
   when: k3s_mode != "support"
   tags: [extras]
