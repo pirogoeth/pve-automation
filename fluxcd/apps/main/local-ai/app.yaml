@@ -42,7 +42,7 @@ spec:
           enabled: true
           size: 64Gi
           accessModes:
-          - ReadWriteOnce
+          - ReadWriteMany
           storageClass: "longhorn"
     ingress:
       enabled: true
