@@ -9,4 +9,5 @@ resources:
 - secrets/weave-gitops-dashboard.admin-user-creds.secret.yaml
 - system.yaml
 - weave-gitops-dashboard.yaml
+- weave-scope.yaml
 - windmill.yaml
