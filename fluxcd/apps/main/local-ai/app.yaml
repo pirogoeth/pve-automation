@@ -37,6 +37,8 @@ spec:
     models:
       list:
         - url: "https://gpt4all.io/models/ggml-gpt4all-j.bin"
+        - url: "https://huggingface.co/TheBloke/Luna-AI-Llama2-Uncensored-GGUF/blob/main/luna-ai-llama2-uncensored.Q4_0.gguf"
+        - url: "https://huggingface.co/TheBloke/Redmond-Puffin-13B-GGUF/raw/main/redmond-puffin-13b.Q8_0.gguf"
       persistence:
         pvc:
           enabled: true
@@ -44,6 +46,20 @@ spec:
           accessModes:
           - ReadWriteMany
           storageClass: "longhorn"
+    # Prompt templates to include
+    # Note: the keys of this map will be the names of the prompt template files
+    promptTemplates:
+      ggml-gpt4all-j.tmpl: |
+        The prompt below is a question to answer, a task to complete, or a conversation to respond to; decide which and write an appropriate response.
+        ### Prompt:
+        {{.Input}}
+        ### Response:
+      luna-ai-llama2-uncensored.Q4_0.tmpl: |
+        USER: {{.Input}}
+        ASSISTANT:
+      redmond-puffin-13b.Q8_0.tmpl: |
+        ### human: {{.Input}}
+        ### response:
     ingress:
       enabled: true
       className: traefik
