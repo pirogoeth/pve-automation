@@ -1,6 +1,29 @@
 ---
 
-- hosts: all
+# Read hosts from the Terraform outputs.
+- hosts: localhost
+  tags: [always]
+  tasks:
+  - name: Read Terraform outputs
+    set_fact:
+      _terraform_outputs: "{{ lookup('cloud.terraform.tf_output', project_path=tf_project_path) }}"
+      tf_project_path: "{{ tf_project_path }}"
+    vars:
+      tf_project_path: "{{ (playbook_dir, '..', '..', 'terraform', 'buildkite')|path_join }}"
+  
+  - name: Add buildkite workers
+    add_host:
+      name: "{{ item['name'] }}"
+      groups: [buildkite]
+      ansible_host: "{{ item['ip'] }}"
+      ansible_user: "{{ item['user'] }}"
+      ansible_python_interpreter: /usr/bin/python3
+      tf_project_path: "{{ tf_project_path }}"
+      tf_state_outputs: "{{ _terraform_outputs }}"
+    loop: "{{ _terraform_outputs['buildkite_inventory']['value'] }}"
+    changed_when: false
+
+- hosts: buildkite
   become: yes
   roles:
   - role: buildkite

@@ -22,6 +22,8 @@
     owner: root
     group: root
     mode: 0700
+  notify:
+    - Restart buildkite-agent.service
 
 - name: Write buildkite-agent.service unit file
   template:
@@ -30,6 +32,9 @@
     owner: root
     group: root
     mode: 0644
+  notify:
+    - Reload systemd
+    - Restart buildkite-agent.service
 
 - name: Enable buildkite-agent.service
   systemd:

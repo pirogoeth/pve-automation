@@ -51,6 +51,10 @@ module "agents" {
   domain_name = "kite.2811rrt.net"
   nameserver  = "10.100.0.11"
 
+  # 10.100.10.16 -> 10.100.10.31 (14 hosts available)
+  subnet          = "10.100.10.16/28"
+  network_gateway = "10.100.10.1"
+
   agent_count = 2
   shape = {
     cores          = 2
@@ -59,7 +63,8 @@ module "agents" {
     storage_type   = "virtio"
     storage_id     = "local-lvm"
     user           = "buildkite"
-    network_bridge = "vmbr0"
+    network_bridge = "vmbr1"
+    network_tag    = 20
 
     disk_size = "20G"
     extra_disks = [
@@ -69,8 +74,9 @@ module "agents" {
         storage = "ext1"
       },
     ]
-
-    # TODO: Separate vlan for buildkite
-    network_tag = -1
   }
+}
+
+output "buildkite_inventory" {
+  value = module.agents.buildkite_inventory
 }

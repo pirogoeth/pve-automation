@@ -57,3 +57,15 @@ variable "domain_name" {
   type        = string
   default     = "k3s.local"
 }
+
+variable "network_gateway" {
+  description = "Gateway to use for nodes"
+  type        = string
+  default     = null
+}
+
+variable "subnet" {
+  description = "Subnet to use for nodes"
+  type        = string
+  default     = null
+}

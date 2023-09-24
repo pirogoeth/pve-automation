@@ -2,6 +2,22 @@ resource "macaddress" "agent" {
   count = var.agent_count
 }
 
+locals {
+  default_ipconfig = "ip=dhcp,ip6=auto"
+  node_ips = var.subnet != "" ? {
+    for i in range(var.agent_count) : i => cidrhost(var.subnet, i)
+    } : {
+    for i in range(var.agent_count) : i => null
+  }
+  cidr_bitnum = var.subnet != "" ? split("/", var.subnet)[1] : null
+  node_ipconfigs = {
+    for i, address in local.node_ips :
+    i => address != null
+    ? format("ip=%s/%s,gw=%s", address, local.cidr_bitnum, var.network_gateway)
+    : local.default_ipconfig
+  }
+}
+
 resource "proxmox_vm_qemu" "agent" {
   count = var.agent_count
 
@@ -15,11 +31,9 @@ resource "proxmox_vm_qemu" "agent" {
 
   pool = var.proxmox_resource_pool
 
-  ciuser  = var.shape.user
-  sshkeys = file(var.authorized_keys_file)
-  # TODO: Set up a separate subnet for buildkite agents
-  # ipconfig0  = "ip=${local.support_node_ip}/${local.lan_subnet_cidr_bitnum},gw=${var.network_gateway}"
-  ipconfig0  = "ip=dhcp,ip6=auto"
+  ciuser     = var.shape.user
+  sshkeys    = file(var.authorized_keys_file)
+  ipconfig0  = local.node_ipconfigs[count.index]
   nameserver = var.nameserver
 
   cores   = var.shape.cores
@@ -61,7 +75,6 @@ resource "proxmox_vm_qemu" "agent" {
       cicustom,
       sshkeys,
       disk[0],
-      network
     ]
   }
 }

@@ -9,12 +9,14 @@ Restart=always
 ExecStartPre=-/usr/bin/docker kill buildkite-agent
 ExecStartPre=-/usr/bin/docker rm buildkite-agent
 ExecStartPre=/usr/bin/docker pull buildkite/agent:{{ buildkite_agent_version }}
-ExecStart=/usr/bin/docker run -it --restart=unless-stopped --name=buildkite-agent \
-  -v "/opt/buildkite/secrets:/buildkite/secrets:ro" \ 
+ExecStart=/usr/bin/docker run --restart=unless-stopped --name=buildkite-agent \
+  -v "/opt/buildkite/builds:/buildkite/builds" \
+  -v "/opt/buildkite/secrets:/buildkite/secrets:ro" \
   -v "/opt/buildkite/hooks:/buildkite/hooks:ro" \
   -v "/opt/buildkite/agent.cfg:/buildkite/buildkite-agent.cfg:ro" \
   -v "/var/run/docker.sock:/var/run/docker.sock" \
   buildkite/agent:{{ buildkite_agent_version }}
+ExecStop=/usr/bin/docker stop buildkite-agent
 
 [Install]
 WantedBy=multi-user.target
