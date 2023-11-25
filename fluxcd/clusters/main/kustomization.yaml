@@ -5,6 +5,7 @@ resources:
 - k8s-dashboard.yaml
 - local-ai.yaml
 - longhorn.yaml
+- nvidia-k8s.yaml
 - postgres-operator.yaml
 - secrets/weave-gitops-dashboard.admin-user-creds.secret.yaml
 - system.yaml

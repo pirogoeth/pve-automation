@@ -135,6 +135,33 @@ module "k3s-main" {
           storage = "ext3"
         },
       ]
+    },
+    {
+      name = "gpu"
+      size = 1
+      # 10.100.10.206 -> 10.100.10.207 (1 available IPs for nodes)
+      subnet         = "10.100.10.206/31"
+      network_bridge = "vmbr1"
+      network_tag    = 20
+      cores          = 4
+      sockets        = 1
+      memory         = 16384
+      user           = "ubuntu"
+      disk_size      = "40G"
+      extra_disks = [
+        {
+          size    = "256G"
+          storage = "ext1"
+        },
+        {
+          size    = "256G"
+          storage = "ext2"
+        },
+        {
+          size    = "256G"
+          storage = "ext3"
+        },
+      ]
     }
   ]
 }

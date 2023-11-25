@@ -1,0 +1,146 @@
+---
+
+#
+# LOAD SERVICES FACTS
+#
+
+- name: Load service facts
+  ansible.builtin.service_facts:
+
+#
+# INSTALL NVIDIA CONTAINER TOOLKIT
+#
+
+- name: Download libnvidia-container gpg key
+  get_url:
+    url: https://nvidia.github.io/nvidia-docker/gpgkey
+    dest: /tmp/nvidia-docker.gpg
+    mode: 0644
+
+- name: Dearmor libnvidia-container gpg key
+  shell: gpg --dearmor -o /usr/share/keyrings/nvidia-container-toolkit-keyring.gpg /tmp/nvidia-docker.gpg
+  args:
+    creates: /usr/share/keyrings/nvidia-container-toolkit-keyring.gpg
+
+- name: Download nvidia-container-toolkit apt list
+  get_url:
+    url: https://nvidia.github.io/nvidia-docker/{{ ansible_distribution | lower }}{{ ansible_distribution_version }}/nvidia-docker.list
+    dest: /etc/apt/sources.list.d/nvidia-container-toolkit.list
+    mode: 0644
+  notify:
+  - Apt repo update
+
+- name: Set apt signed-by attribute on nvidia-container-toolkit.list
+  replace: 
+    path: /etc/apt/sources.list.d/nvidia-container-toolkit.list
+    regexp: '^deb (https://.*)'
+    replace: 'deb [signed-by=/usr/share/keyrings/nvidia-container-toolkit-keyring.gpg] \1'
+  notify:
+  - Apt repo update
+
+- meta: flush_handlers
+
+- name: Install nvidia-container-toolkit
+  apt:
+    name: nvidia-container-toolkit
+    state: latest
+
+- name: Configure Docker to use nvidia-container-toolkit
+  command: nvidia-ctk runtime configure --runtime=docker
+  notify:
+  - Restart docker
+  - Restart k3s
+
+#
+# INSTALL CUDA DRIVERS
+#
+
+- name: Fetch cuda-keyring
+  get_url:
+    url: https://developer.download.nvidia.com/compute/cuda/repos/{{ os_release }}/{{ arch }}/cuda-keyring_1.1-1_all.deb
+    dest: /tmp/cuda-keyring.deb
+    mode: 0644
+  vars:
+    arch: "{{ ansible_architecture }}"
+    os_release: "{{ ansible_distribution | lower }}{{ ansible_distribution_version | replace('.', '') }}"
+  notify:
+  - Apt repo update
+
+- name: Install /tmp/cuda-keyring.deb
+  apt:
+    deb: /tmp/cuda-keyring.deb
+    state: present
+  notify:
+  - Apt repo update
+
+- meta: flush_handlers
+
+- name: Install cuda packages
+  apt:
+    name: "{{ item }}"
+    state: latest
+    update_cache: yes
+    install_recommends: no
+  loop:
+  - cuda-drivers
+  - cuda-toolkit
+
+- name: Check original environment exists
+  raw: test -f /etc/environment.orig && echo -n true || echo -n false
+  changed_when: false
+  register: original_environment_exists
+
+- name: Backup stock environment
+  copy:
+    src: /etc/environment
+    dest: /etc/environment.orig
+    owner: root
+    group: root
+    mode: 0644
+  when: original_environment_exists.stdout == "false"
+
+- name: Restore original environment before adding cuda to PATH
+  copy:
+    src: /etc/environment.orig
+    dest: /etc/environment
+    remote_src: true
+    owner: root
+    group: root
+    mode: 0644
+    force: yes
+  when: original_environment_exists.stdout == "true"
+
+- name: Find all cuda paths
+  find:
+    paths: ["/usr/local"]
+    patterns: ["cuda-*"]
+    follow: true
+    recurse: no
+    file_type: directory
+  register: cuda_bases
+
+- name: Add cuda to PATH
+  lineinfile:
+    path: /etc/environment
+    regexp: '^PATH="(.*)"'
+    line: 'PATH="{{ item }}/bin:\1"'
+    backrefs: true
+    state: present
+  loop: "{{ cuda_bases.files }}"
+  notify:
+  - Restart k3s
+  - Restart docker
+
+#
+# INSTALL CONTAINERD CONFIG
+#
+
+- name: Install containerd config template
+  copy:
+    src: config.toml.tmpl
+    dest: /var/lib/rancher/k3s/agent/etc/containerd/config.toml.tmpl
+    owner: root
+    group: root
+    mode: 0644
+  notify:
+  - Restart k3s

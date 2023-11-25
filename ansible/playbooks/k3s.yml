@@ -64,14 +64,6 @@
     debug:
       msg: "Support node is available at {{ hostvars[groups['k3s_support'][0]]['ansible_host'] }}"
 
-- hosts: all
-  become: yes
-  tags: [base, tailscale]
-  roles:
-  - role: artis3n.tailscale
-    vars:
-      verbose: true
-
 - hosts: all:!k3s_support
   become: yes
   tags: [k3s]

@@ -13,3 +13,7 @@
 - include_tasks: extras.yml
   when: k3s_mode != "support"
   tags: [extras]
+
+- include_tasks: gpu.yml
+  when: k3s_worker_pool|default('none') == "gpu"
+  tags: [gpu]

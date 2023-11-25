@@ -15,3 +15,7 @@ Usage instructions:
     - Run `terraform plan -var-file ../vars/proxmox.tfvars` to see what will be created
     - Run `terraform apply plan` to create all the things
     - Wait
+
+## Notes
+
+- The `gpu` worker node(s) have their GPU attached to them _manually_. This is due to a limitation in the Proxmox terraform provider.
