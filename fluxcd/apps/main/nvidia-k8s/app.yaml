@@ -25,4 +25,4 @@ spec:
   targetNamespace: kube-system
   install:
     createNamespace: false
-    values: {}
+  values: {}
