@@ -156,7 +156,7 @@ build {
       "-e", "packer_image_type=${build.name}",
     ]
     inventory_groups = ["packer_${build.name}", "k3s_leader"]
-    galaxy_file      = "ansible/requirements.yml"
+    galaxy_file      = "ansible/roles/requirements.yml"
     galaxy_command   = "~${build.User}/.local/bin/ansible-galaxy"
     group_vars       = "ansible/inventory/group_vars"
   }
@@ -189,7 +189,7 @@ build {
       "-e", "packer_image_type=${build.name}",
     ]
     inventory_groups = ["packer_${build.name}", "k3s_agent"]
-    galaxy_file      = "ansible/requirements.yml"
+    galaxy_file      = "ansible/roles/requirements.yml"
     galaxy_command   = "~${build.User}/.local/bin/ansible-galaxy"
     group_vars       = "ansible/inventory/group_vars"
   }

@@ -1,0 +1,15 @@
+---
+
+- name: Read encryption key from file
+  slurp:
+    src: /opt/nomad/config/gossip.key
+  register: gossip_key
+
+- name: Set gossip encryption key in config
+  set_fact:
+    _nomad_config: |
+      {{ _nomad_config | combine({
+        "server": {
+          "encrypt": gossip_key.content|b64decode,
+        },
+      }, recursive=true) }}

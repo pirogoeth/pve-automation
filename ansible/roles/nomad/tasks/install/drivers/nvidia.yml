@@ -1,0 +1,66 @@
+---
+
+- name: Make nomad-device-nvidia directories
+  file:
+    path: "{{ item }}"
+    state: directory
+    recurse: yes
+    owner: nomad
+    group: nomad
+  with_items:
+    - /opt/nomad/drivers/nvidia/pkg
+    - /opt/nomad/drivers/nvidia/versions/{{ nomad_device_nvidia_version }}
+
+- name: Make nomad-device-nvidia bin link
+  file:
+    src: "/opt/nomad/drivers/nvidia/versions/current"
+    dest: "/opt/nomad/drivers/nvidia/bin"
+    state: link
+    force: yes
+
+- name: Check for current nomad-device-nvidia version
+  stat:
+    path: /opt/nomad/drivers/nvidia/versions/current
+  register: current_version_link
+
+- name: Link nomad-device-nvidia into Nomad plugins dir
+  file:
+    src: "/opt/nomad/drivers/nvidia/versions/current/nomad-device-nvidia"
+    dest: "/opt/nomad/plugins/nomad-device-nvidia"
+    state: link
+    force: yes
+
+- set_fact:
+    current_version: "{{ current_version_link.stat.lnk_target|basename }}"
+  when: current_version_link.stat.exists
+
+- when: not current_version_link.stat.exists or current_version != nomad_device_nvidia_version
+  vars:
+    base_dir: /opt/nomad/drivers/nvidia
+    version: "{{ nomad_device_nvidia_version }}"
+  block:
+  - name: Fetch nomad-device-nvidia binary
+    get_url:
+      url: "{{ nomad_device_nvidia_binary_url }}"
+      dest: "{{ base_dir }}/pkg/"
+      mode: 0750
+      checksum: "sha256:{{ nomad_device_nvidia_checksums_url }}"
+      owner: nomad
+      group: nomad
+    register: binary_archive
+
+  - name: Unarchive nomad-device-nvidia binary
+    unarchive:
+      src: "{{ binary_archive.dest }}"
+      dest: "{{ base_dir }}/versions/{{ version }}"
+      remote_src: yes
+      owner: nomad
+      group: nomad
+      creates: "{{ base_dir }}/versions/{{ version }}/nomad-device-nvidia"
+
+  - name: Link current version of nomad-device-nvidia
+    file:
+      src: "{{ base_dir }}/versions/{{ version }}"
+      dest: "{{ base_dir }}/versions/current"
+      state: link
+      force: yes

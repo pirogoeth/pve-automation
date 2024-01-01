@@ -1,0 +1,34 @@
+---
+
+- name: Make nomad group
+  group:
+    name: nomad
+
+- name: Make nomad user
+  user:
+    name: nomad
+    comment: "Nomad user"
+    shell: /bin/false
+    home: /opt/nomad
+    system: yes
+    password_lock: true
+    group: nomad
+    groups:
+    - docker
+    - kvm
+
+- name: Install CNI plugins
+  include_tasks:
+    file: install/cni.yml
+
+- name: Install CSI dependencies
+  include_tasks:
+    file: install/csi.yml
+
+- name: Install Nomad
+  include_tasks:
+    file: install/nomad.yml
+
+- name: Install nomad-device-nvidia
+  include_tasks:
+    file: install/drivers/nvidia.yml

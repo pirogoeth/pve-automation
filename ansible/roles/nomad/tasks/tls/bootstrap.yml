@@ -1,0 +1,68 @@
+---
+
+- name: Check for CA certificate
+  stat:
+    path: /opt/nomad/tls/nomad-agent-ca.pem
+  register: cacert
+
+- name: Check for CA key
+  stat:
+    path: /opt/nomad/tls/nomad-agent-ca-key.pem
+  register: cakey
+
+- name: Check for server certificate
+  stat:
+    path: /opt/nomad/tls/global-server-nomad.pem
+  register: servercert
+
+- name: Check for server key
+  stat:
+    path: /opt/nomad/tls/global-server-nomad-key.pem
+  register: serverkey
+
+- name: Check for client certificate
+  stat:
+    path: /opt/nomad/tls/global-client-nomad.pem
+  register: clientcert
+
+- name: Check for client key
+  stat:
+    path: /opt/nomad/tls/global-client-nomad-key.pem
+  register: clientkey
+
+- when: not ([cacert.stat.exists, cakey.stat.exists, servercert.stat.exists, serverkey.stat.exists, clientcert.stat.exists, clientkey.stat.exists]|all)
+  block:
+  - name: Generate CA keypair
+    command: /opt/nomad/versions/current/nomad tls ca create -days 3650
+    args:
+      creates: /opt/nomad/tls/nomad-agent-ca*.pem
+      chdir: /opt/nomad/tls
+
+  - name: Generate server keypair
+    command: /opt/nomad/versions/current/nomad tls cert create -server -days 3650
+    args:
+      creates: /opt/nomad/tls/global-server-nomad*.pem
+      chdir: /opt/nomad/tls
+
+  - name: Generate client keypair
+    command: /opt/nomad/versions/current/nomad tls cert create -client -days 3650
+    args:
+      creates: /opt/nomad/tls/global-client-nomad*.pem
+      chdir: /opt/nomad/tls
+
+- name: Check for CLI certificate
+  stat:
+    path: /opt/nomad/tls/global-cli-nomad.pem
+  register: clicert
+
+- name: Check for CLI key
+  stat:
+    path: /opt/nomad/tls/global-cli-nomad-key.pem
+  register: clikey
+
+- name: Generate CLI keypair
+  command: /opt/nomad/versions/current/nomad tls cert create -cli -days 3650
+  args:
+    creates: /opt/nomad/tls/global-cli-nomad*.pem
+    chdir: /opt/nomad/tls
+  when: not ([clicert.stat.exists, clikey.stat.exists]|all)

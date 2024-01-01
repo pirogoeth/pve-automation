@@ -1,0 +1,36 @@
+---
+
+- when: "is_bootstrap_host"
+  block:
+  - name: Get PEM file paths
+    find:
+      paths: "/opt/nomad/tls"
+      patterns: "*.pem"
+    register: pem_files
+
+  - name: Create archive of TLS bundle
+    command: cpio -o --reproducible -v -H crc -F /opt/nomad/tls-bundle.cpio
+    args:
+      creates: /opt/nomad/tls-bundle.cpio
+      stdin: "{{ pem_files.files | map(attribute='path') | join('\n') }}"
+
+- when: is_normal_host
+  delegate_to: "{{ bootstrap_host }}"
+  block:
+  - name: Stat source TLS bundle
+    stat:
+      path: "/opt/nomad/tls-bundle.cpio"
+    register: src_tls_bundle_stat
+
+  - name: Slurp TLS bundle
+    slurp:
+      src: "/opt/nomad/tls-bundle.cpio"
+    register: src_tls_bundle
+
+- include_tasks:
+    file: ./distribute_member.yml
+  vars:
+    source_bundle_checksum: "{{ src_tls_bundle_stat.stat.checksum }}"
+  when:
+  - is_clustered
+  - is_normal_host

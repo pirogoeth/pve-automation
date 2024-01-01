@@ -1,0 +1,38 @@
+---
+
+- name: Source encryption key checksum
+  stat:
+    path: /opt/nomad/config/gossip.key
+  register: source_gossip_key_file
+  delegate_to: "{{ bootstrap_host }}"
+
+- name: Checksum encryption key on other nodes
+  stat:
+    path: /opt/nomad/config/gossip.key
+  register: target_gossip_key_file
+  when: is_clustered and is_normal_host
+
+- when: is_clustered and is_normal_host and source_gossip_key_file.stat.exists
+  block:
+  - name: Compare encryption keys
+    fail:
+      msg: "Encryption key mismatch between bootstrap node and {{ item }}"
+    when:
+    - target_gossip_key_file.stat.exists
+    - source_gossip_key_file.stat.checksum != target_gossip_key_file.stat.checksum
+
+  - name: Read encryption key from file
+    slurp:
+      src: /opt/nomad/config/gossip.key
+    register: source_gossip_key
+    delegate_to: "{{ bootstrap_host }}"
+
+  - name: Write encryption key to file
+    copy:
+      content: "{{ source_gossip_key.content | b64decode }}"
+      dest: /opt/nomad/config/gossip.key
+      owner: nomad
+      group: nomad
+      mode: 0600
+    when:
+    - not target_gossip_key_file.stat.exists

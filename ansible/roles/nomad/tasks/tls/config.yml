@@ -1,0 +1,12 @@
+---
+
+- name: Add TLS config options
+  set_fact:
+    _nomad_config: |
+      {{ _nomad_config | combine({
+        "tls": {
+          "ca_file": "/opt/nomad/tls/nomad-agent-ca.pem",
+          "cert_file": "/opt/nomad/tls/global-server-nomad.pem",
+          "key_file": "/opt/nomad/tls/global-server-nomad-key.pem",
+        }
+      }, recursive=true) }}

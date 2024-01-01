@@ -1,0 +1,15 @@
+---
+
+- name: Bootstrap gossip encryption
+  include_tasks:
+    file: gossip/bootstrap.yml
+  when: is_bootstrap_host
+
+- name: Distribute gossip token
+  include_tasks:
+    file: gossip/distribute.yml
+  when: is_clustered
+
+- name: Gossip encryption configuration
+  include_tasks:
+    file: gossip/config.yml

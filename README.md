@@ -1,15 +1,19 @@
-# pve-packer
+# pve-automation
 
-Automated builds for fancy homelab bits.
+Fancy homelab automation bits.
 
 ## Roadmap
 
 - [X] Create a script that will create a barebones Ubuntu Server base inside of PVE to base these builds on
 - [X] Plain Docker base image
-- [~] Coolify base image
 - [X] K3s base image
-- [ ] Automated rebuilds? Github Actions? Buildkite?
-- [X] Automated deployments? Flux? ArgoCD?
+- [X] Buildkite base image
+- Packer:
+  - [ ] Automated rebuilds? Github Actions? Buildkite?
+- K3s:
+  - [X] Automated deployments? Flux? ArgoCD?
+- Nomad:
+  - [ ] Automated deployments???
 
 ## Rough Instructions
 
@@ -20,7 +24,7 @@ Automated builds for fancy homelab bits.
 4. Follow the [ansible README](ansible/README.md) to configure the cluster.
 5. Follow the [fluxcd README](fluxcd/README.md) to set up gitops.
 
-## Notes
+## Notes (k3s)
 
 - Cluster ingress is handled by [Traefik](https://traefik.io/traefik/), which is a deployment built-in to `k3s`.
 - There is a cluster "gateway" of sorts. The `support` node runs the following services:
@@ -33,3 +37,9 @@ Automated builds for fancy homelab bits.
             - `gateway.main.k8s.2811rrt.net` - split horizon between Tailnet and my home network
             - `*.main.k8s.2811rrt.net` - CNAME to `gateway.main.k8s.2811rrt.net`
             - Note to self: if you rebuild the cluster, you need to update the Tailnet leg of the split horizon record, as the rebuild changes the instance's Tailnet IP address.
+
+## Notes (nomad)
+
+- Cluster ingress is handled by [Traefik](https://traefik.io/traefik/)
+- Jobs are currently deployed via Terraform module, but is unreliable when a full redeploy is needed.
+  - A series of targeted applies are needed to get all jobs deployed successfully, but I need to run that down later.

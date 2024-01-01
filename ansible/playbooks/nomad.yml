@@ -1,0 +1,37 @@
+---
+
+# Read hosts from the Terraform outputs.
+- hosts: localhost
+  tags: [always]
+  tasks:
+  - name: Read Terraform outputs
+    set_fact:
+      _terraform_outputs: "{{ lookup('cloud.terraform.tf_output', project_path=tf_project_path) }}"
+      tf_project_path: "{{ tf_project_path }}"
+    vars:
+      tf_project_path: "{{ (playbook_dir, '..', '..', 'terraform', 'nomad-main', 'infra')|path_join }}"
+  
+  - name: Add nomad nodes
+    add_host:
+      name: "{{ item['name'] }}"
+      groups: [nomad]
+      ansible_host: "{{ item['ip'] }}"
+      ansible_user: "{{ item['user'] }}"
+      ansible_python_interpreter: /usr/bin/python3
+      tf_project_path: "{{ tf_project_path }}"
+      tf_state_outputs: "{{ _terraform_outputs }}"
+    loop: "{{ _terraform_outputs['nomad_inventory']['value'] }}"
+    changed_when: false
+
+- ansible.builtin.import_playbook: "base.yml"
+  tags: [base]
+  vars:
+    base_tailscale_up_skip: false
+
+- hosts: nomad
+  become: true
+  roles:
+  - role: docker
+    tags: [docker]
+  - role: nomad
+    tags: [nomad]

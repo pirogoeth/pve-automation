@@ -1,0 +1,31 @@
+---
+
+- name: Install CSI dependency packages
+  apt:
+    name:
+    - nfs-common
+    - open-iscsi
+    - lsscsi
+    - sg3-utils
+    - multipath-tools
+    - scsitools
+    state: latest
+
+- name: Enable multipathing
+  copy:
+    src: csi/multipath.conf
+    dest: /etc/multipath.conf
+    owner: root
+    group: root
+    mode: 0644
+  notify:
+  - Restart multipath-tools
+
+- name: Enable CSI dependency services
+  service:
+    name: "{{ item }}"
+    enabled: yes
+    state: started
+  loop:
+  - multipath-tools
+  - open-iscsi

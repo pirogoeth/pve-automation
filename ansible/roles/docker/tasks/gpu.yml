@@ -130,18 +130,3 @@
   notify:
   - Restart k3s
   - Restart docker
-
-#
-# INSTALL CONTAINERD CONFIG
-#
-
-- name: Install containerd config template
-  copy:
-    src: config.toml.tmpl
-    dest: /var/lib/rancher/k3s/agent/etc/containerd/config.toml.tmpl
-    owner: root
-    group: root
-    mode: 0644
-  notify:
-  - Restart containerd
-  - Restart k3s

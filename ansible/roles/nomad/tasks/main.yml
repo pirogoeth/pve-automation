@@ -1,0 +1,13 @@
+---
+
+- include_tasks: ./install/main.yml
+  vars: &common_vars
+    bootstrap_host: "{{ groups['nomad'][0] }}"
+    normal_hosts: "{{ groups['nomad'][1:]|default([]) }}"
+    is_bootstrap_host: "{{ inventory_hostname == bootstrap_host }}"
+    is_normal_host: "{{ not is_bootstrap_host }}"
+    is_clustered: "{{ groups['nomad'] | length > 1 }}"
+
+- include_tasks: ./configure.yml
+  vars:
+    <<: *common_vars

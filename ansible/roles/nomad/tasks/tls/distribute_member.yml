@@ -1,0 +1,36 @@
+---
+
+- name: Checksum remote TLS bundle
+  stat:
+    path: "/opt/nomad/tls-bundle.cpio"
+  register: tls_bundle_stat
+
+- name: Remove remote TLS files when bundle has different checksum
+  file:
+    path: "/opt/nomad/tls/*.pem"
+    state: absent
+  when:
+  - tls_bundle_stat.get('stat', {}).get('checksum') != source_bundle_checksum
+
+- name: Write TLS bundle to other nodes
+  copy:
+    content: "{{ src_tls_bundle['content'] | b64decode }}"
+    dest: "/opt/nomad/tls-bundle.cpio"
+    owner: nomad
+    group: nomad
+    mode: 0644
+    force: yes
+  when:
+  - (tls_bundle_stat.stat.checksum|default(None)) != source_bundle_checksum
+  register: tls_bundle_copy
+
+- name: Unarchive TLS bundle
+  command: cpio -i -v -d -F /opt/nomad/tls-bundle.cpio
+  # unarchive:
+  #   src: "/opt/nomad/tls-bundle.tar"
+  #   dest: "/opt/nomad/tls"
+  #   remote_src: yes
+  #   owner: nomad
+  #   group: nomad
+  #   creates: "/opt/nomad/tls/*.pem"
+  when: tls_bundle_copy.changed

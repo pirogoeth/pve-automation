@@ -1,0 +1,83 @@
+---
+
+- name: Make Nomad directories
+  file:
+    path: "{{ item }}"
+    state: directory
+    recurse: yes
+    owner: nomad
+    group: nomad
+  with_items:
+    - /opt/nomad/bin
+    - /opt/nomad/config/conf.d
+    - /opt/nomad/data
+    - /opt/nomad/pkg
+    - /opt/nomad/plugins
+    - /opt/nomad/tls
+    - /opt/nomad/versions/{{ nomad_version }}
+
+- name: Set up links to Nomad config
+  file:
+    src: "{{ item.src }}"
+    dest: "{{ item.dest }}"
+    state: link
+  with_items:
+    - { src: "/opt/nomad/config", dest: "/etc/nomad" }
+    - { src: "/opt/nomad/data", dest: "/var/lib/nomad" }
+
+- name: Install Nomad shim script
+  copy:
+    src: nomad.sh
+    dest: /opt/nomad/bin/nomad.sh
+    mode: 0755
+
+- name: Link Nomad binary in PATH
+  file:
+    src: "/opt/nomad/versions/current/nomad"
+    dest: "/usr/local/bin/nomad"
+    state: link
+    force: yes
+
+- name: Link Nomad shim script in PATH
+  file:
+    src: "/opt/nomad/bin/nomad.sh"
+    dest: "/usr/local/bin/nomad.sh"
+    state: link
+    force: yes
+
+- name: Check for current Nomad version
+  stat:
+    path: /opt/nomad/versions/current
+  register: nomad_current_version_link
+
+- set_fact:
+    nomad_current_version: "{{ nomad_current_version_link.stat.lnk_target|basename }}"
+  when: nomad_current_version_link.stat.exists
+
+- when: nomad_current_version|default(none) != nomad_version
+  block:
+  - name: Fetch Nomad binary
+    get_url:
+      url: "{{ nomad_binary_url }}"
+      dest: "/opt/nomad/pkg/"
+      mode: 0750
+      checksum: "sha256:{{ nomad_checksums_url }}"
+      owner: nomad
+      group: nomad
+    register: nomad_binary_archive
+
+  - name: Unarchive Nomad binary
+    unarchive:
+      src: "{{ nomad_binary_archive.dest }}"
+      dest: "/opt/nomad/versions/{{ nomad_version }}"
+      remote_src: yes
+      owner: nomad
+      group: nomad
+      creates: "/opt/nomad/versions/{{ nomad_version }}/nomad"
+
+  - name: Link current version of Nomad
+    file:
+      src: "/opt/nomad/versions/{{ nomad_version }}"
+      dest: "/opt/nomad/versions/current"
+      state: link
+      force: yes

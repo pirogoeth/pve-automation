@@ -1,0 +1,56 @@
+---
+
+- set_fact:
+    _nomad_config: "{{ nomad_config_initial|combine(nomad_config, recursive=true) }}"
+
+- include_tasks: ./tls/main.yml
+  when: _nomad_tls_enabled
+  vars:
+    _nomad_tls_enabled: "{{ nomad_config.get('tls', {}).get('http') == true or nomad_config.get('tls', {}).get('rpc') == true }}"
+
+- include_tasks: ./gossip/main.yml
+
+- name: Set bootstrap-node-only configs
+  set_fact:
+    _nomad_config: |
+      {{ _nomad_config | combine({
+        "server": {
+          "bootstrap_expect": nomad_bootstrap_expect,
+        },
+      }, recursive=true) }}
+  when: is_bootstrap_host
+
+- name: Set server_join on non-bootstrap-nodes
+  set_fact:
+    _nomad_config: |
+      {{ _nomad_config | combine({
+        "server": {
+          "server_join": {
+            "retry_join": [hostvars[bootstrap_host]['ansible_default_ipv4']['address']],
+            "retry_max": 0,
+            "retry_interval": "15s",
+          },
+        },
+      }, recursive=true) }}
+  when: not is_bootstrap_host
+
+- name: Create Nomad systemd service
+  template:
+    src: nomad.service.j2
+    dest: /etc/systemd/system/nomad.service
+    owner: root
+    group: root
+    mode: 0644
+  notify:
+    - Reload systemd
+    - Enable nomad service
+
+- name: Write Nomad config
+  copy:
+    content: "{{ _nomad_config | to_nice_json }}"
+    dest: /etc/nomad/conf.d/nomad.json
+    owner: nomad
+    group: nomad
+    mode: 0644
+  notify:
+    - Restart nomad

@@ -16,6 +16,11 @@
     name: docker
     state: restarted
 
+- name: Restart containerd
+  systemd:
+    name: containerd
+    state: restarted
+
 - name: Apt repo update
   apt:
     update_cache: yes

@@ -257,7 +257,12 @@ function create_vm_template() {
   logcapture qm shutdown "${VM_ID}"
   logcapture qm wait "${VM_ID}"
   logcapture qm template "${VM_ID}"
-  
+
+  if [[ ! -z "${TEMPLATE_VM_NAME}" ]] ; then
+    logcapture qm set "${VM_ID}" -name "${TEMPLATE_VM_NAME}"
+    target_vm_name="${TEMPLATE_VM_NAME}"
+  fi
+
   echo "${target_vm_name}"
 }
 

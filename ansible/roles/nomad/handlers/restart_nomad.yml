@@ -1,0 +1,14 @@
+---
+
+- throttle: 1
+  block:
+  - name: Restart Nomad service
+    systemd:
+      name: nomad
+      state: restarted
+
+  - name: Wait for Nomad server port to be open
+    wait_for:
+      port: 4646
+      delay: 5
+      timeout: 60

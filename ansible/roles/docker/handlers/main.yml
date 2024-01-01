@@ -1,0 +1,16 @@
+---
+
+- name: Apt repo update
+  apt:
+    update_cache: yes
+
+- name: Restart docker
+  service:
+    name: docker
+    state: restarted
+
+- name: Restart k3s
+  service:
+    name: k3s
+    state: restarted
+  when: k3s_control_node is defined

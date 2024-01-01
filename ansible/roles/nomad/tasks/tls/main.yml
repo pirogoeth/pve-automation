@@ -1,0 +1,15 @@
+---
+
+- name: Ensure TLS on bootstrap node
+  include_tasks:
+    file: tls/bootstrap.yml
+  when: is_bootstrap_host
+
+- name: Distribute TLS
+  include_tasks:
+    file: tls/distribute.yml
+  when: is_clustered
+
+- name: TLS configuration
+  include_tasks:
+    file: tls/config.yml

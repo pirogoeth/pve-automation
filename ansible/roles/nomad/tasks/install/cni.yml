@@ -1,0 +1,57 @@
+---
+
+- name: Make CNI plugin directories
+  file:
+    path: "{{ item }}"
+    state: directory
+    recurse: yes
+    owner: nomad
+    group: nomad
+  with_items:
+    - /opt/cni/config/
+    - /opt/cni/pkg/
+    - /opt/cni/versions/{{ cni_plugins_version }}
+
+- name: Make CNI bin link
+  file:
+    src: "/opt/cni/versions/current"
+    dest: "/opt/cni/bin"
+    state: link
+    force: yes
+
+- name: Check for current CNI plugins version
+  stat:
+    path: /opt/cni/versions/current
+  register: current_version_link
+
+- set_fact:
+    cni_plugins_current_version: "{{ current_version_link.stat.lnk_target|basename }}"
+  when: current_version_link.stat.exists
+
+- when: not current_version_link.stat.exists or cni_plugins_current_version != cni_plugins_version
+  block:
+  - name: Fetch CNI plugins archive
+    get_url:
+      url: "{{ cni_plugins_binary_url }}"
+      dest: "/opt/cni/pkg/"
+      mode: 0750
+      checksum: "sha256:{{ cni_plugins_checksums_url }}"
+      owner: nomad
+      group: nomad
+    register: cni_plugins_binary_archive
+
+  - name: Unarchive CNI plugins binaries
+    unarchive:
+      src: "{{ cni_plugins_binary_archive.dest }}"
+      dest: "/opt/cni/versions/{{ cni_plugins_version }}"
+      remote_src: yes
+      owner: nomad
+      group: nomad
+      creates: "/opt/cni/versions/{{ cni_plugins_version }}/dummy"
+
+  - name: Link current version of CNI plugins
+    file:
+      src: "/opt/cni/versions/{{ cni_plugins_version }}"
+      dest: "/opt/cni/versions/current"
+      state: link
+      force: yes

@@ -1,0 +1,19 @@
+---
+
+- name: Reload systemd
+  systemd:
+    daemon_reload: yes
+
+- name: Restart nomad
+  include_tasks:
+    file: ./restart_nomad.yml
+
+- name: Enable nomad service
+  systemd:
+    name: nomad
+    enabled: yes
+
+- name: Restart multipath-tools
+  systemd:
+    name: multipath-tools
+    state: restarted

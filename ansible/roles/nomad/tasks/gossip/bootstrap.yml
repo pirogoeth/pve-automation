@@ -1,0 +1,20 @@
+---
+
+- name: Check for encryption key file
+  stat:
+    path: /opt/nomad/config/gossip.key
+  register: gossip_key_file
+
+- when: not gossip_key_file.stat.exists
+  block:
+  - name: Generate encryption key
+    command: /opt/nomad/versions/current/nomad operator gossip keyring generate
+    register: gossip_key
+
+  - name: Write encryption key to file
+    copy:
+      content: "{{ gossip_key.stdout }}"
+      dest: /opt/nomad/config/gossip.key
+      owner: nomad
+      group: nomad
+      mode: 0600

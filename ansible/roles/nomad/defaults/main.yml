@@ -1,0 +1,23 @@
+---
+
+_nomad_arch: "{{ 'amd64' if ansible_architecture == 'x86_64' else 'arm64' if ansible_architecture == 'aarch64' else ansible_architecture }}"
+
+nomad_version: "1.7.0"
+nomad_binary_url: "https://releases.hashicorp.com/nomad/{{ nomad_version }}/nomad_{{ nomad_version }}_linux_{{ _nomad_arch }}.zip"
+nomad_checksums_url: "https://releases.hashicorp.com/nomad/{{ nomad_version }}/nomad_{{ nomad_version }}_SHA256SUMS"
+
+cni_plugins_version: "1.4.0"
+cni_plugins_binary_url: "https://github.com/containernetworking/plugins/releases/download/v{{ cni_plugins_version }}/cni-plugins-linux-{{ _nomad_arch }}-v{{ cni_plugins_version }}.tgz"
+cni_plugins_checksums_url: "https://github.com/containernetworking/plugins/releases/download/v{{ cni_plugins_version }}/cni-plugins-linux-{{ _nomad_arch }}-v{{ cni_plugins_version }}.tgz.sha256"
+
+nomad_device_nvidia_version: "1.0.0"
+nomad_device_nvidia_binary_url: "https://releases.hashicorp.com/nomad-device-nvidia/{{ nomad_device_nvidia_version }}/nomad-device-nvidia_{{ nomad_device_nvidia_version }}_linux_{{ _nomad_arch }}.zip"
+nomad_device_nvidia_checksums_url: "https://releases.hashicorp.com/nomad-device-nvidia/{{ nomad_device_nvidia_version }}/nomad-device-nvidia_{{ nomad_device_nvidia_version }}_SHA256SUMS"
+
+nomad_env: {}
+nomad_config_initial:
+  data_dir: "/opt/nomad/data"
+  plugin_dir: "/opt/nomad/plugins"
+  bind_addr: "0.0.0.0"
+
+nomad_bootstrap_expect: 1
