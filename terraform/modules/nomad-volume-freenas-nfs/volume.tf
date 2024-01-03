@@ -20,6 +20,7 @@ resource "nomad_csi_volume" "volume" {
   namespace    = var.namespace
   capacity_min = var.capacity.min
   capacity_max = coalesce(var.capacity.max, var.capacity.min)
+  parameters   = var.parameters
 
   capability {
     access_mode     = var.access_mode

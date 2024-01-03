@@ -10,6 +10,7 @@ resource "nomad_job" "changedetection" {
     vars = {
       version     = "latest"
       volume_name = module.changedetection_data.volume_name
+      domain      = var.service_base_domain
     }
   }
 }
@@ -28,6 +29,7 @@ resource "nomad_job" "minio" {
       root_password = random_string.minio_root_password.result
       version       = "latest"
       volume_name   = module.minio_data.volume_name
+      domain        = var.service_base_domain
     }
   }
 }
@@ -85,6 +87,7 @@ resource "nomad_job" "distribution" {
       s3_access_key_id     = minio_iam_service_account.distribution_sa.access_key
       s3_secret_access_key = minio_iam_service_account.distribution_sa.secret_key
       version              = "2"
+      domain               = var.service_base_domain
     }
   }
 }

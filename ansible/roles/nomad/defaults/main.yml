@@ -21,3 +21,4 @@ nomad_config_initial:
   bind_addr: "0.0.0.0"
 
 nomad_bootstrap_expect: 1
+nomad_docker_auth_file: ~

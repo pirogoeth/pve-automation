@@ -1,4 +1,4 @@
-resource "nomad_namespace" "continuous-integration" {
+resource "nomad_namespace" "continuous_integration" {
   name        = "continuous-integration"
   description = "Continuous integration tooling"
 }

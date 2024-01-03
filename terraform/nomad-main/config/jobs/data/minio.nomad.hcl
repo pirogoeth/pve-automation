@@ -14,6 +14,10 @@ variable "volume_name" {
   type = string
 }
 
+variable "domain" {
+  type = string
+}
+
 job "minio" {
   namespace   = "data"
   type        = "service"
@@ -87,13 +91,14 @@ job "minio" {
 
         tags = [
           "traefik.enable=true",
-          "traefik.http.routers.minio-s3api.rule=Host(`s3.2811rrt.net`)",
+          "traefik.http.routers.minio-s3api.rule=Host(`s3.${var.domain}`)",
           "traefik.http.routers.minio-s3api.entrypoints=web",
           "traefik.http.routers.minio-s3api.middlewares=minio-https-redirect",
-          "traefik.http.routers.minio-s3api-secure.rule=Host(`s3.2811rrt.net`)",
+          "traefik.http.routers.minio-s3api-secure.rule=Host(`s3.${var.domain}`)",
           "traefik.http.routers.minio-s3api-secure.entrypoints=web-secure",
           "traefik.http.routers.minio-s3api-secure.tls=true",
-          "traefik.http.routers.minio-s3api-secure.tls.certresolver=letsencrypt",
+          # Temporarily(?) using the defaultGeneratedCert
+          # "traefik.http.routers.minio-s3api-secure.tls.certresolver=letsencrypt",
         ]
       }
 
@@ -103,14 +108,15 @@ job "minio" {
         port     = "console"
         tags = [
           "traefik.enable=true",
-          "traefik.http.routers.minio.rule=Host(`console.s3.2811rrt.net`)",
+          "traefik.http.routers.minio.rule=Host(`console.s3.${var.domain}`)",
           "traefik.http.routers.minio.entrypoints=web",
           "traefik.http.routers.minio.middlewares=minio-https-redirect",
           "traefik.http.middlewares.minio-https-redirect.redirectscheme.scheme=https",
-          "traefik.http.routers.minio-secure.rule=Host(`console.s3.2811rrt.net`)",
+          "traefik.http.routers.minio-secure.rule=Host(`console.s3.${var.domain}`)",
           "traefik.http.routers.minio-secure.entrypoints=web-secure",
           "traefik.http.routers.minio-secure.tls=true",
-          "traefik.http.routers.minio-secure.tls.certresolver=letsencrypt",
+          # Temporarily(?) using the defaultGeneratedCert
+          # "traefik.http.routers.minio-secure.tls.certresolver=letsencrypt",
         ]
 
         check {

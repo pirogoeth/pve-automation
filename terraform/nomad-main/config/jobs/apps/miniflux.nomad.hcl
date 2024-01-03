@@ -6,6 +6,10 @@ variable "admin_password" {
   type = string
 }
 
+variable "domain" {
+  type = string
+}
+
 variable "version" {
   type    = string
   default = "2.0.51"
@@ -59,12 +63,14 @@ job "miniflux" {
       }
 
       env {
-        DATABASE_URL   = "postgres://miniflux:miniflux@localhost/miniflux?sslmode=disable"
-        RUN_MIGRATIONS = "1"
-        CREATE_ADMIN   = "1"
-        ADMIN_USERNAME = var.admin_username
-        ADMIN_PASSWORD = var.admin_password
-        LISTEN_ADDR    = ":3000"
+        DATABASE_URL             = "postgres://miniflux:miniflux@localhost/miniflux?sslmode=disable"
+        RUN_MIGRATIONS           = "1"
+        CREATE_ADMIN             = "1"
+        ADMIN_USERNAME           = var.admin_username
+        ADMIN_PASSWORD           = var.admin_password
+        LISTEN_ADDR              = ":3000"
+        METRICS_COLLECTOR        = "1"
+        METRICS_ALLOWED_NETWORKS = "127.0.0.0/8,172.17.0.0/12,10.100.10.0/23"
       }
 
       resources {
@@ -76,15 +82,18 @@ job "miniflux" {
         port     = "http"
         provider = "nomad"
         tags = [
+          "prometheus.io/scrape=true",
+          "prometheus.io/path=/metrics",
           "traefik.enable=true",
-          "traefik.http.routers.miniflux.rule=Host(`news.2811rrt.net`)",
+          "traefik.http.routers.miniflux.rule=Host(`news.${var.domain}`)",
           "traefik.http.routers.miniflux.entrypoints=web",
           "traefik.http.routers.miniflux.middlewares=miniflux-https-redirect",
           "traefik.http.middlewares.miniflux-https-redirect.redirectscheme.scheme=https",
-          "traefik.http.routers.miniflux-secure.rule=Host(`news.2811rrt.net`)",
+          "traefik.http.routers.miniflux-secure.rule=Host(`news.${var.domain}`)",
           "traefik.http.routers.miniflux-secure.entrypoints=web-secure",
           "traefik.http.routers.miniflux-secure.tls=true",
-          "traefik.http.routers.miniflux-secure.tls.certresolver=letsencrypt",
+          # Temporarily(?) using the defaultGeneratedCert
+          # "traefik.http.routers.miniflux-secure.tls.certresolver=letsencrypt",
         ]
       }
     }

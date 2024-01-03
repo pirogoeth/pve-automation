@@ -23,3 +23,8 @@ variable "access_mode" {
   type    = string
   default = "single-node-writer"
 }
+
+variable "parameters" {
+  type    = map(string)
+  default = {}
+}

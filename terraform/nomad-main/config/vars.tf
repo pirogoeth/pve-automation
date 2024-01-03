@@ -32,3 +32,22 @@ variable "buildkite_agent_token" {
   type    = string
   default = ""
 }
+
+variable "service_base_domain" {
+  type    = string
+  default = "example.org"
+}
+
+variable "letsencrypt_email" {
+  type    = string
+  default = "misconfigured.admin@example.org"
+}
+
+variable "cloudflare_tunnel_token" {
+  type = string
+}
+
+variable "n8n_webhook_url" {
+  description = "Base URL n8n should use for webhook endpoints"
+  type        = string
+}

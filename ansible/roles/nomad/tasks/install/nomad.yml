@@ -10,11 +10,23 @@
   with_items:
     - /opt/nomad/bin
     - /opt/nomad/config/conf.d
-    - /opt/nomad/data
     - /opt/nomad/pkg
     - /opt/nomad/plugins
     - /opt/nomad/tls
     - /opt/nomad/versions/{{ nomad_version }}
+
+- name: Check data directory
+  stat:
+    path: /opt/nomad/data
+  register: nomad_data_dir
+
+- name: Create nomad_data_dir if not exists
+  file:
+    path: /opt/nomad/data
+    state: directory
+    owner: nomad
+    group: nomad
+  when: not nomad_data_dir.stat.exists
 
 - name: Set up links to Nomad config
   file:

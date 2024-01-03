@@ -1,10 +1,14 @@
-variable "nomad_namespaces" {
-  type = string
-}
-
 variable "version" {
   type    = string
   default = "v2.10.7"
+}
+
+variable "domain" {
+  type = string
+}
+
+variable "letsencrypt_email" {
+  type = string
 }
 
 job "traefik" {
@@ -15,7 +19,7 @@ job "traefik" {
 
   update {
     max_parallel     = 1
-    min_healthy_time = "10s"
+    min_healthy_time = "20s"
     healthy_deadline = "3m"
     canary           = 0
   }
@@ -52,7 +56,7 @@ job "traefik" {
         }
 
         volumes = [
-          "/var/run/docker.sock:/var/run/docker.sock:ro",
+          "/opt/nomad/data/traefik/acme:/acme",
         ]
       }
 
@@ -69,22 +73,27 @@ job "traefik" {
           port "traefik-api" {
             static = 8889
           }
+
+          port "traefik-metrics" {
+            static = 8891
+          }
         }
       }
 
       service {
-        name = "traefik"
+        name     = "traefik-api"
+        port     = "traefik-api"
+        provider = "nomad"
+
         tags = [
           "traefik.enable=true",
-          "traefik.http.routers.traefik-api.rule=Host(`traefik.2811rrt.net`) && PathPrefix(`/api`, `/dashboard`)",
+          "traefik.http.routers.traefik-api.rule=Host(`traefik.${var.domain}`) && PathPrefix(`/api`, `/dashboard`)",
           "traefik.http.routers.traefik-api.entrypoints=traefik-api",
           "traefik.http.routers.traefik-api.service=api@internal",
           "traefik.http.routers.traefik-ping.rule=PathPrefix(`/ping`)",
           "traefik.http.routers.traefik-ping.entrypoints=traefik-api",
           "traefik.http.routers.traefik-ping.service=ping@internal",
         ]
-        port     = "traefik-api"
-        provider = "nomad"
 
         check {
           name     = "Traefik API Check"
@@ -95,6 +104,18 @@ job "traefik" {
           path     = "/health"
           method   = "GET"
         }
+      }
+
+      service {
+        name     = "traefik-metrics"
+        port     = "traefik-metrics"
+        provider = "nomad"
+
+        tags = [
+          "prometheus.io/scrape=true",
+          "prometheus.io/path=/metrics",
+          "prometheus.io/scrape_interval=15s",
+        ]
       }
 
       template {
@@ -143,7 +164,10 @@ EOH
 
         data = <<EOH
 log:
-  level: "DEBUG"
+  level: "INFO"
+  format: "json"
+
+accessLog:
   format: "json"
 
 entryPoints:
@@ -160,12 +184,24 @@ entryPoints:
       tls: {}
   traefik-api:
     address: ":8889"
+  traefik-metrics:
+    address: ":8891"
 
 certificatesResolvers:
   letsencrypt:
     acme:
-      email: "letsencrypt@seanj.dev"
+      email: "${var.letsencrypt_email}"
+      caServer: "https://acme-staging-v02.api.letsencrypt.org/directory"
+      storage: "/acme/staging.json"
+      dnsChallenge:
+        provider: "cloudflare"
+        delayBeforeCheck: 15
+        resolvers: ["1.1.1.1:53", "8.8.8.8:53"]
+  letsencrypt-prod:
+    acme:
+      email: "${var.letsencrypt_email}"
       caServer: "https://acme-v02.api.letsencrypt.org/directory"
+      storage: "/acme/production.json"
       dnsChallenge:
         provider: "cloudflare"
         delayBeforeCheck: 15
@@ -189,9 +225,15 @@ metrics:
     addEntryPointsLabels: true
     addServicesLabels: true
     addRoutersLabels: true
-    entryPoint: "traefik"
+    entryPoint: "traefik-metrics"
 
+
+{{- with nomadVar "managed-namespaces" -}}
+{{$namespaces := .json.Value|parseJSON}}
 providers:
+  file:
+    directory: local/conf.d
+    watch: true
   nomad:
     refreshInterval: "15s"
     endpoint:
@@ -202,7 +244,45 @@ providers:
         key: "local/nomad-cli-key.pem"
         insecureSkipVerify: true
     exposedByDefault: false
-    namespaces: ${var.nomad_namespaces}
+    namespaces: {{toJSON $namespaces}}
+{{end}}
+
+experimental:
+  plugins:
+    cloudflarewarp:
+      moduleName: "github.com/BetterCorp/cloudflarewarp"
+      version: "v1.3.3"
+EOH
+      }
+
+      template {
+        destination = "local/conf.d/tls.yml"
+        change_mode = "noop"
+
+        data = <<EOH
+tls:
+  stores:
+    default:
+      defaultGeneratedCert:
+        resolver: letsencrypt-prod
+        domain:
+          main: "${var.domain}"
+          sans:
+            - "*.${var.domain}"
+EOH
+      }
+
+      template {
+        destination = "local/conf.d/middlewares.yml"
+        change_mode = "noop"
+
+        data = <<EOH
+http:
+  middlewares:
+    cloudflare-tunnelled:
+      plugin:
+        cloudflarewarp:
+          disableDefault: false
 EOH
       }
     }

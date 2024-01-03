@@ -6,6 +6,10 @@ variable "volume_name" {
   type = string
 }
 
+variable "domain" {
+  type = string
+}
+
 job "changedetection" {
   namespace   = "data"
   datacenters = ["dc1"]
@@ -40,7 +44,7 @@ job "changedetection" {
 
       env {
         PORT          = NOMAD_PORT_http
-        BASE_URL      = "https://changedet.2811rrt.net"
+        BASE_URL      = "https://changedet.${var.domain}"
         HIDE_REFERER  = "true"
         FETCH_WORKERS = 10
       }
@@ -73,14 +77,15 @@ EOF
         provider = "nomad"
         tags = [
           "traefik.enable=true",
-          "traefik.http.routers.changedetection.rule=Host(`changedet.2811rrt.net`)",
+          "traefik.http.routers.changedetection.rule=Host(`changedet.${var.domain}`)",
           "traefik.http.routers.changedetection.entrypoints=web",
           "traefik.http.routers.changedetection.middlewares=changedetection-https-redirect",
           "traefik.http.middlewares.changedetection-https-redirect.redirectscheme.scheme=https",
-          "traefik.http.routers.changedetection-secure.rule=Host(`changedet.2811rrt.net`)",
+          "traefik.http.routers.changedetection-secure.rule=Host(`changedet.${var.domain}`)",
           "traefik.http.routers.changedetection-secure.entrypoints=web-secure",
           "traefik.http.routers.changedetection-secure.tls=true",
-          "traefik.http.routers.changedetection-secure.tls.certresolver=letsencrypt",
+          # Temporarily(?) using the defaultGeneratedCert
+          # "traefik.http.routers.changedetection-secure.tls.certresolver=letsencrypt",
         ]
       }
     }

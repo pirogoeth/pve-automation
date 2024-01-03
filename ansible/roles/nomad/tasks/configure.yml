@@ -45,6 +45,28 @@
     - Reload systemd
     - Enable nomad service
 
+- when: nomad_docker_auth_file|default(none) is not none
+  block:
+  - name: Write Nomad docker auths file
+    copy:
+      content: "{{ nomad_docker_auth_file }}"
+      dest: /opt/nomad/config/docker_auth.json
+      owner: nomad
+      group: nomad
+      mode: 0600
+    notify:
+      - Restart nomad
+
+  - name: Set Docker auths file path in Nomad config
+    set_fact:
+      _nomad_config: |
+        {% set _auth_config = {"docker": {"config": {"auth": {"config": "/opt/nomad/config/docker_auth.json"}}}} %}
+        {% set _docker_plugin = _nomad_config.plugin | select("dict_contains", "docker") | first | combine(_auth_config, recursive=true) %}
+        {% set _other_plugins = _nomad_config.plugin | reject("dict_contains", "docker") %}
+        {{ _nomad_config | combine({
+          "plugin": [_docker_plugin] + _other_plugins,
+        }, recursive=true, list_merge="replace") }}
+
 - name: Write Nomad config
   copy:
     content: "{{ _nomad_config | to_nice_json }}"
@@ -54,3 +76,9 @@
     mode: 0644
   notify:
     - Restart nomad
+
+- name: Ensure Nomad service started
+  service:
+    name: nomad
+    state: started
+    enabled: true

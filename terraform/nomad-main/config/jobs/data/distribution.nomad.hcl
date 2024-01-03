@@ -22,6 +22,10 @@ variable "version" {
   type = string
 }
 
+variable "domain" {
+  type = string
+}
+
 job "distribution" {
   namespace   = "data"
   type        = "service"
@@ -71,7 +75,7 @@ job "distribution" {
         REGISTRY_STORAGE_S3_REGION         = var.s3_region
         REGISTRY_STORAGE_S3_BUCKET         = var.s3_bucket_name
         REGISTRY_HTTP_ADDR                 = ":5000"
-        REGISTRY_HTTP_HOST                 = "oci.2811rrt.net"
+        REGISTRY_HTTP_HOST                 = "oci.${var.domain}"
       }
 
       template {
@@ -124,19 +128,31 @@ EOF
       }
 
       service {
-        name     = "distribution"
+        port     = "debug"
+        provider = "nomad"
+
+        tags = [
+          "prometheus.io/scrape=true",
+          "prometheus.io/path=/metrics",
+          "prometheus.io/scheme=http",
+          "prometheus.io/scrape_interval=60s",
+        ]
+      }
+
+      service {
         port     = "http"
         provider = "nomad"
 
         tags = [
           "traefik.enable=true",
-          "traefik.http.routers.distribution.rule=Host(`oci.2811rrt.net`)",
+          "traefik.http.routers.distribution.rule=Host(`oci.${var.domain}`)",
           "traefik.http.routers.distribution.entrypoints=web",
           "traefik.http.routers.distribution.middlewares=minio-https-redirect",
-          "traefik.http.routers.distribution-secure.rule=Host(`oci.2811rrt.net`)",
+          "traefik.http.routers.distribution-secure.rule=Host(`oci.${var.domain}`)",
           "traefik.http.routers.distribution-secure.entrypoints=web-secure",
           "traefik.http.routers.distribution-secure.tls=true",
-          "traefik.http.routers.distribution-secure.tls.certresolver=letsencrypt",
+          # Temporarily(?) using the defaultGeneratedCert
+          # "traefik.http.routers.distribution-secure.tls.certresolver=letsencrypt",
         ]
 
         check {
