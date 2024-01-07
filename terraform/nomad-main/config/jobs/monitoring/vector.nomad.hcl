@@ -131,7 +131,7 @@ source = """
 [sinks.loki]
 type = "loki"
 inputs = ["docker_metadata", "vector_logs", "host_auth_parser"]
-endpoint = "https://loki.2811rrt.net"
+endpoint = "https://loki.${var.domain}"
 encoding.codec = "json"
 labels = { "appname" = "{{appname}}" }
 
