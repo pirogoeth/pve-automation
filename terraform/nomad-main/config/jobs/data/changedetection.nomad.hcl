@@ -40,6 +40,10 @@ job "changedetection" {
         force_pull = true
 
         ports = ["http"]
+
+        labels {
+          appname = "changedetection"
+        }
       }
 
       env {

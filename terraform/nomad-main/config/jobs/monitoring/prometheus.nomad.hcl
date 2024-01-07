@@ -64,6 +64,10 @@ job "prometheus" {
           "local/prometheus.yml:/etc/prometheus/prometheus.yml:ro",
           "/opt/nomad/tls:/opt/nomad/tls:ro",
         ]
+
+        labels {
+          appname = "prometheus"
+        }
       }
 
       template {

@@ -60,6 +60,11 @@ job "miniflux" {
         force_pull = true
 
         ports = ["http"]
+
+        labels {
+          appname                  = "miniflux"
+          vector_stderr_parse_mode = "logfmt"
+        }
       }
 
       env {

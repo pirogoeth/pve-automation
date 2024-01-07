@@ -24,7 +24,7 @@ job "democratic-csi-storage-controller" {
           "--csi-version=1.2.0",
           "--csi-name=org.democratic-csi.nfs",
           "--driver-config-file=${NOMAD_TASK_DIR}/driver-config-file.yaml",
-          "--log-level=debug",
+          "--log-level=info",
           "--csi-mode=controller",
           "--server-socket=/csi-data/csi.sock",
           "--server-address=0.0.0.0",
@@ -32,6 +32,10 @@ job "democratic-csi-storage-controller" {
         ]
 
         privileged = true
+
+        labels {
+          appname = "democratic-csi-storage-controller"
+        }
       }
 
       csi_plugin {

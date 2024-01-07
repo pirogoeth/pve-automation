@@ -81,7 +81,7 @@ resource "nomad_job" "distribution" {
 
   hcl2 {
     vars = {
-      s3_endpoint_url      = "s3.2811rrt.net"
+      s3_endpoint_url      = "s3.${var.service_base_domain}"
       s3_region            = "global"
       s3_bucket_name       = minio_s3_bucket.distribution.bucket
       s3_access_key_id     = minio_iam_service_account.distribution_sa.access_key

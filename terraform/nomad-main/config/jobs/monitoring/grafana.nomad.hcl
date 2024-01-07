@@ -44,6 +44,10 @@ job "grafana" {
         force_pull = true
 
         ports = ["http"]
+
+        labels {
+          appname = "grafana"
+        }
       }
 
       volume_mount {

@@ -33,10 +33,21 @@ resource "nomad_job" "n8n" {
   hcl2 {
     vars = {
       domain                  = var.service_base_domain
-      version                 = "1.22.3"
+      version                 = "1.21.1"
       volume_name_data        = module.n8n_data.volume_name
       volume_name_local_files = module.n8n_local_files.volume_name
-      webhook_url             = var.n8n_webhook_url
+    }
+  }
+}
+
+resource "nomad_job" "coder" {
+  jobspec = file("${local.jobs}/apps/coder.nomad.hcl")
+
+  hcl2 {
+    vars = {
+      version             = "2.6.0"
+      domain              = var.service_base_domain
+      volume_name_db_data = module.coder_db_data.volume_name
     }
   }
 }

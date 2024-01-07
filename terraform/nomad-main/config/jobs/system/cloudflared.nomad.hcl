@@ -41,6 +41,10 @@ job "cloudflared" {
         ]
 
         ports = ["metrics"]
+
+        labels {
+          appname = "cloudflared"
+        }
       }
 
       resources {

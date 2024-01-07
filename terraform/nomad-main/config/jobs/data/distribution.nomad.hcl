@@ -66,6 +66,12 @@ job "distribution" {
         volumes = [
           "local/config.yml:/etc/docker/registry/config.yml:ro"
         ]
+
+        labels {
+          appname                  = "distribution"
+          vector_stdout_parse_mode = "combinedlf"
+          vector_stderr_parse_mode = "json"
+        }
       }
 
       env {

@@ -14,12 +14,16 @@ job "democratic-csi-storage-node" {
           "--csi-version=1.2.0",
           "--csi-name=org.democratic-csi.nfs",
           "--driver-config-file=${NOMAD_TASK_DIR}/driver-config-file.yaml",
-          "--log-level=debug",
+          "--log-level=info",
           "--csi-mode=node",
           "--server-socket=/csi-data/csi.sock",
         ]
 
         privileged = true
+
+        labels {
+          appname = "democratic-csi-storage-node"
+        }
       }
 
       csi_plugin {

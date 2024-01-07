@@ -67,6 +67,10 @@ job "minio" {
         ]
 
         ports = ["s3api", "console"]
+
+        labels {
+          appname = "minio"
+        }
       }
 
       env {
@@ -81,7 +85,7 @@ job "minio" {
 
       resources {
         cpu    = 256
-        memory = 512
+        memory = 1024
       }
 
       service {

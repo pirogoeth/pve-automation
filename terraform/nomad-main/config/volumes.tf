@@ -98,3 +98,13 @@ module "grafana_data" {
     min = "32GiB"
   }
 }
+
+module "coder_db_data" {
+  source = "../../modules/nomad-volume-freenas-nfs"
+
+  namespace = "apps"
+  id        = "coder-db-data"
+  capacity = {
+    min = "32GiB"
+  }
+}

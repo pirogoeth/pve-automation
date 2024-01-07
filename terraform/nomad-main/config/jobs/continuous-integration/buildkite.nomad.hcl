@@ -48,6 +48,10 @@ job "buildkite" {
           # "/usr/local/bin/buildkite-agent:/usr/local/bin/buildkite-agent",
           "/var/run/docker.sock:/var/run/docker.sock",
         ]
+
+        labels {
+          appname = "buildkite-agent"
+        }
       }
 
       volume_mount {

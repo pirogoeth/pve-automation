@@ -14,10 +14,6 @@ variable "domain" {
   type = string
 }
 
-variable "webhook_url" {
-  type = string
-}
-
 job "n8n" {
   namespace   = "apps"
   type        = "service"
@@ -60,15 +56,22 @@ job "n8n" {
         force_pull = true
 
         ports = ["http"]
+
+        labels {
+          appname                  = "n8n"
+          vector_stdout_parse_mode = "plain"
+        }
       }
 
       env {
-        N8N_LOG_LEVEL                = "warn"
-        N8N_HOST                     = "n8n.${var.domain}"
-        N8N_PORT                     = "5678"
-        N8N_PROTOCOL                 = "https"
-        NODE_ENV                     = "production"
-        WEBHOOK_URL                  = var.webhook_url
+        N8N_LOG_LEVEL = "warn"
+        N8N_PROTOCOL  = "https"
+        N8N_HOST      = "n8n.${var.domain}"
+        N8N_PORT      = "5678"
+        N8N_PATH      = "/"
+        NODE_ENV      = "production"
+        WEBHOOK_URL   = "https://webhooks.${var.domain}/"
+        # N8N_EDITOR_BASE_URL          = "https://n8n.${var.domain}/"
         GENERIC_TIMEZONE             = "Etc/UTC"
         N8N_DEFAULT_BINARY_DATA_MODE = "filesystem"
         NODE_FUNCTION_ALLOW_BUILTIN  = "*"
@@ -102,16 +105,24 @@ job "n8n" {
           "prometheus.io/scrape_interval=15s",
 
           "traefik.enable=true",
-          "traefik.http.routers.n8n.rule=Host(`n8n.${var.domain}`) && !(Path(`/healthz`) || Path(`/metrics`))",
+          "traefik.http.routers.n8n.rule=Host(`n8n.${var.domain}`) && !Path(`/healthz`, `/metrics`)",
           "traefik.http.routers.n8n.entrypoints=web,web-secure",
           "traefik.http.routers.n8n.tls=true",
           # Temporarily(?) using the defaultGeneratedCert
           # "traefik.http.routers.n8n.tls.certresolver=letsencrypt",
           "traefik.http.routers.n8n.middlewares=n8n-headers,n8n-https-redirect",
           "traefik.http.routers.n8n.service=n8n",
-          "traefik.http.services.n8n.loadbalancer.server.port=5678",
+
+          "traefik.http.routers.n8n-webhooks.rule=Host(`webhooks.${var.domain}`)",
+          "traefik.http.routers.n8n-webhooks.entrypoints=web-secure",
+          "traefik.http.routers.n8n-webhooks.tls=true",
+          "traefik.http.routers.n8n-webhooks.middlewares=cloudflare-tunnelled@file",
+          "traefik.http.routers.n8n-webhooks.service=n8n",
+
           "traefik.http.services.n8n.loadbalancer.passhostheader=true",
+
           "traefik.http.middlewares.n8n-https-redirect.redirectscheme.scheme=https",
+
           "traefik.http.middlewares.n8n-headers.headers.STSSeconds=315360000",
           "traefik.http.middlewares.n8n-headers.headers.browserXSSFilter=true",
           "traefik.http.middlewares.n8n-headers.headers.contentTypeNosniff=true",
