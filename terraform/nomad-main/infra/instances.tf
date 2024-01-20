@@ -44,6 +44,7 @@ module "instances" {
   proxmox_node          = var.proxmox_node
   proxmox_resource_pool = "nomad-main"
   instance_prefix       = "nomad-main"
+  startup_options       = "order=100,up=30"
 
   source_template = local.last_image.custom_data.template_name
 
@@ -52,7 +53,7 @@ module "instances" {
   domain_name = "main.nomad.2811rrt.net"
   nameserver  = "10.100.0.11"
 
-  # 10.100.10.16 -> 10.100.10.31 (14 hosts available)
+  # 10.100.10.32 -> 10.100.10.47 (14 hosts available)
   subnet          = "10.100.10.32/28"
   network_gateway = "10.100.10.1"
 
@@ -86,8 +87,65 @@ module "instances" {
       },
     ]
   }
+  attributes = {
+    "nomad_node_pool" = "default"
+  }
+}
+
+module "gpu_instances" {
+  source = "../../modules/proxmox-instances"
+
+  proxmox_node          = var.proxmox_node
+  proxmox_resource_pool = "nomad-main"
+  instance_prefix       = "nomad-main-gpu"
+  startup_options       = "order=100,up=30"
+
+  source_template = local.last_image.custom_data.template_name
+
+  authorized_keys_file = abspath(join("/", [path.module, "..", "..", "resources", "authorized_keys"]))
+
+  domain_name = "main.nomad.2811rrt.net"
+  nameserver  = "10.100.0.11"
+
+  # 10.100.10.48 -> 10.100.10.63 (14 hosts available)
+  subnet          = "10.100.10.48/28"
+  network_gateway = "10.100.10.1"
+
+  instance_count = 1
+  shape = {
+    cores          = 2
+    sockets        = 2
+    memory         = 1024 * 32
+    storage_type   = "virtio"
+    storage_id     = "local-lvm"
+    user           = "ubuntu"
+    network_bridge = "vmbr1"
+    network_tag    = 20
+
+    disk_size = "64G"
+    extra_disks = [
+      {
+        type    = "virtio"
+        size    = "512G"
+        storage = "ext1"
+      },
+      {
+        type    = "virtio"
+        size    = "512G"
+        storage = "ext2"
+      },
+      {
+        type    = "virtio"
+        size    = "512G"
+        storage = "ext3"
+      },
+    ]
+  }
+  attributes = {
+    "nomad_node_pool" = "gpu"
+  }
 }
 
 output "nomad_inventory" {
-  value = module.instances.inventory
+  value = concat(module.instances.inventory, module.gpu_instances.inventory)
 }

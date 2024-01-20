@@ -119,8 +119,7 @@ job "minio" {
           "traefik.http.routers.minio-secure.rule=Host(`console.s3.${var.domain}`)",
           "traefik.http.routers.minio-secure.entrypoints=web-secure",
           "traefik.http.routers.minio-secure.tls=true",
-          # Temporarily(?) using the defaultGeneratedCert
-          # "traefik.http.routers.minio-secure.tls.certresolver=letsencrypt",
+          "traefik.http.routers.minio-secure.tls.certresolver=letsencrypt-prod",
         ]
 
         check {

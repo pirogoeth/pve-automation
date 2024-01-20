@@ -20,6 +20,7 @@
       ansible_python_interpreter: /usr/bin/python3
       tf_project_path: "{{ tf_project_path }}"
       tf_state_outputs: "{{ _terraform_outputs }}"
+      attributes: "{{ item['attributes'] }}"
     loop: "{{ _terraform_outputs['nomad_inventory']['value'] }}"
     changed_when: false
 
@@ -28,7 +29,7 @@
   vars:
     base_tailscale_up_skip: false
 
-- hosts: nomad
+- hosts: "{{ limit | default('nomad') }}"
   become: true
   roles:
   - role: docker

@@ -33,7 +33,7 @@ resource "nomad_job" "n8n" {
   hcl2 {
     vars = {
       domain                  = var.service_base_domain
-      version                 = "1.21.1"
+      version                 = "1.24.0"
       volume_name_data        = module.n8n_data.volume_name
       volume_name_local_files = module.n8n_local_files.volume_name
     }

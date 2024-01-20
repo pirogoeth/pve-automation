@@ -10,6 +10,7 @@ job "cloudflared" {
   namespace   = "nomad-system"
   type        = "service"
   datacenters = ["dc1"]
+  node_pool   = "default"
 
   update {
     stagger = "30s"

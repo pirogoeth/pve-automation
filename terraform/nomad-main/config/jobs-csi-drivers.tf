@@ -9,4 +9,8 @@ resource "nomad_job" "storage_controller" {
 
 resource "nomad_job" "storage_node" {
   jobspec = file("${local.jobs}/csi-drivers/democratic-csi-storage-node.nomad.hcl")
+  hcl2 {
+    vars = {
+    }
+  }
 }

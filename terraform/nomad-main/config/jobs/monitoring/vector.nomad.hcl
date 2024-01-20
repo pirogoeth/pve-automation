@@ -10,6 +10,7 @@ job "vector" {
   namespace   = "monitoring"
   type        = "system"
   datacenters = ["dc1"]
+  node_pool   = "all"
 
   update {
     stagger      = "30s"

@@ -45,8 +45,22 @@
     name: nvidia-container-toolkit
     state: latest
 
+- name: Get hash of docker config file
+  stat:
+    path: /etc/docker/daemon.json
+  register: docker_config_file
+
 - name: Configure Docker to use nvidia-container-toolkit
   command: nvidia-ctk runtime configure --runtime=docker
+
+- name: Check hash of docker config file
+  stat:
+    path: /etc/docker/daemon.json
+  register: docker_config_file_new
+
+- name: Restart docker/k3s if docker config file changed
+  meta: noop
+  when: docker_config_file.stat.checksum != docker_config_file_new.stat.checksum
   notify:
   - Restart docker
   - Restart k3s

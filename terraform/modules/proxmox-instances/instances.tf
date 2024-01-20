@@ -26,6 +26,7 @@ resource "proxmox_vm_qemu" "instance" {
   desc        = "${var.instance_prefix} ${count.index}"
   os_type     = "cloud-init"
   agent       = 1
+  startup     = var.startup_options
 
   clone = var.source_template
 

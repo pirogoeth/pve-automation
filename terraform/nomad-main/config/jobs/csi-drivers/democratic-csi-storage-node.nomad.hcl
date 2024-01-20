@@ -2,6 +2,7 @@ job "democratic-csi-storage-node" {
   namespace   = "csi-drivers"
   datacenters = ["dc1"]
   type        = "system"
+  node_pool   = "all"
 
   group "node" {
     task "node" {

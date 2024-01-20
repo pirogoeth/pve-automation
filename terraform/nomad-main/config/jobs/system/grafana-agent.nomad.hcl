@@ -4,9 +4,11 @@ variable "version" {
 }
 
 job "grafana-agent" {
+  namespace = "nomad-system"
   type        = "system"
   datacenters = ["dc1"]
   priority    = 90
+  node_pool = "all"
 
   update {
     stagger = "30s"

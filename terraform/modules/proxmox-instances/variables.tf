@@ -74,3 +74,15 @@ variable "subnet" {
   type        = string
   default     = null
 }
+
+variable "startup_options" {
+  description = "Additional startup options to pass to Proxmox"
+  type        = string
+  default     = ""
+}
+
+variable "attributes" {
+  description = "Additional attributes to add to the instance's inventory"
+  type        = map(string)
+  default     = {}
+}

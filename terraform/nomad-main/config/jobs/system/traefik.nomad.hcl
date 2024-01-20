@@ -12,10 +12,11 @@ variable "letsencrypt_email" {
 }
 
 job "traefik" {
-  datacenters = ["dc1"]
-  priority    = 100
-  type        = "system"
   namespace   = "nomad-system"
+  type        = "system"
+  priority    = 100
+  datacenters = ["dc1"]
+  node_pool   = "all"
 
   update {
     max_parallel     = 1

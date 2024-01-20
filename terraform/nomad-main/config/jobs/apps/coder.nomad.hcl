@@ -49,12 +49,14 @@ job "coder" {
         ports = ["http", "metrics"]
 
         labels {
-          appname = "coder"
+          appname                  = "coder"
+          vector_stdout_parse_mode = "plain"
+          vector_stderr_parse_mode = "plain"
         }
       }
 
       env {
-        CODER_ADDRESS                        = "0.0.0.0:7080"
+        CODER_HTTP_ADDRESS                   = "0.0.0.0:7080"
         CODER_ACCESS_URL                     = "https://code.${var.domain}"
         CODER_PROMETHEUS_ENABLE              = "true"
         CODER_PROMETHEUS_ADDRESS             = "0.0.0.0:7081"
