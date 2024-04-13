@@ -2,10 +2,6 @@ variable "version" {
   type = string
 }
 
-variable "volume_name" {
-  type = string
-}
-
 variable "domain" {
   type = string
 }
@@ -24,14 +20,6 @@ job "changedetection" {
       }
     }
 
-    volume "data" {
-      type            = "csi"
-      source          = var.volume_name
-      read_only       = false
-      attachment_mode = "file-system"
-      access_mode     = "single-node-writer"
-    }
-
     task "changedetection" {
       driver = "docker"
 
@@ -44,6 +32,10 @@ job "changedetection" {
         labels {
           appname = "changedetection"
         }
+
+        volumes = [
+          "/data/changedetection-data:/datastore",
+        ]
       }
 
       env {
@@ -64,11 +56,6 @@ job "changedetection" {
 PLAYWRIGHT_DRIVER_URL=ws://{{.Address}}:{{.Port}}/?stealth=1&--disable-web-security=true
 {{end}}
 EOF
-      }
-
-      volume_mount {
-        volume      = "data"
-        destination = "/datastore"
       }
 
       resources {

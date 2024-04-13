@@ -2,7 +2,7 @@
 
 _nomad_arch: "{{ 'amd64' if ansible_architecture == 'x86_64' else 'arm64' if ansible_architecture == 'aarch64' else ansible_architecture }}"
 
-nomad_version: "1.7.0"
+nomad_version: "1.7.6"
 nomad_binary_url: "https://releases.hashicorp.com/nomad/{{ nomad_version }}/nomad_{{ nomad_version }}_linux_{{ _nomad_arch }}.zip"
 nomad_checksums_url: "https://releases.hashicorp.com/nomad/{{ nomad_version }}/nomad_{{ nomad_version }}_SHA256SUMS"
 

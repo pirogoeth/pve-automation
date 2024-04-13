@@ -1,6 +1,7 @@
 ---
 
-- throttle: 1
+- serial: 1
+  throttle: 1
   block:
   - name: Restart Nomad service
     systemd:

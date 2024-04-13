@@ -2,6 +2,7 @@
 
 cloud-init-cfgs
 
+ansible/.venv
 ansible/playbooks/*.retry
 ansible/roles/artis3n.*
 ansible/roles/geerlingguy.*

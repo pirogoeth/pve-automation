@@ -7,10 +7,6 @@ variable "version" {
   default = "3-ubuntu"
 }
 
-variable "volume_name" {
-  type = string
-}
-
 job "buildkite" {
   namespace   = "continuous-integration"
   type        = "service"
@@ -23,14 +19,6 @@ job "buildkite" {
 
   group "app" {
     count = 1
-
-    volume "builds" {
-      type            = "csi"
-      source          = var.volume_name
-      read_only       = false
-      attachment_mode = "file-system"
-      access_mode     = "multi-node-multi-writer"
-    }
 
     task "agent" {
       driver = "docker"
@@ -45,7 +33,7 @@ job "buildkite" {
         ]
 
         volumes = [
-          # "/usr/local/bin/buildkite-agent:/usr/local/bin/buildkite-agent",
+          "/data/buildkite-agent:/data/buildkite-agent",
           "/var/run/docker.sock:/var/run/docker.sock",
         ]
 
@@ -54,13 +42,8 @@ job "buildkite" {
         }
       }
 
-      volume_mount {
-        volume      = "builds"
-        destination = "/${NOMAD_ALLOC_DIR}/builds"
-      }
-
       env {
-        BUILDKITE_BUILD_PATH = "/${NOMAD_ALLOC_DIR}/builds"
+        BUILDKITE_BUILD_PATH = "${NOMAD_ALLOC_DIR}/buildkite-agent"
       }
 
       resources {

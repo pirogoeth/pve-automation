@@ -1,4 +1,4 @@
-PIP := .venv/bin/pip
+PIP := .venv/bin/python -m pip
 PY := .venv/bin/python
 
 init:
@@ -8,3 +8,5 @@ init:
 	$(PY) -m ensurepip
 	$(PIP) install --upgrade pip
 	$(PIP) install -r requirements.txt
+	ansible-galaxy collection install -r collections/requirements.yml
+	ansible-galaxy role install -r roles/requirements.yml

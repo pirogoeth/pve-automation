@@ -69,7 +69,9 @@ job "minio" {
         ports = ["s3api", "console"]
 
         labels {
-          appname = "minio"
+          appname                  = "minio"
+          vector_stdout_parse_mode = "plain"
+          vector_stderr_parse_mode = "plain"
         }
       }
 

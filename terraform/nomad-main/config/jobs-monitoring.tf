@@ -9,7 +9,6 @@ resource "nomad_job" "prometheus" {
   hcl2 {
     vars = {
       version     = "2.48.1"
-      volume_name = module.prometheus_data.volume_name
       domain      = var.service_base_domain
     }
   }
@@ -21,7 +20,6 @@ resource "nomad_job" "grafana" {
   hcl2 {
     vars = {
       version     = "10.0.10"
-      volume_name = module.grafana_data.volume_name
       domain      = var.service_base_domain
     }
   }
@@ -33,7 +31,7 @@ resource "minio_iam_user" "loki" {
 
 resource "minio_iam_user_policy_attachment" "loki_rw" {
   user_name   = minio_iam_user.loki.name
-  policy_name = "readwrite"
+  policy_name = minio_iam_policy.loki_policy.name
 }
 
 resource "minio_iam_service_account" "loki_sa" {
@@ -45,8 +43,8 @@ resource "minio_s3_bucket" "loki" {
   acl    = "private"
 }
 
-resource "minio_s3_bucket_policy" "loki_policy" {
-  bucket = minio_s3_bucket.loki.bucket
+resource "minio_iam_policy" "loki_policy" {
+  name = "loki-user-rw"
   policy = jsonencode({
     "Version" : "2012-10-17",
     "Statement" : [
@@ -75,11 +73,12 @@ resource "nomad_job" "loki" {
   hcl2 {
     vars = {
       version              = "2.9.3"
-      s3_endpoint_url      = "s3.${var.service_base_domain}"
+      s3_endpoint_url      = var.minio_server
       s3_region            = "global"
       s3_bucket_name       = minio_s3_bucket.loki.bucket
       s3_access_key_id     = minio_iam_service_account.loki_sa.access_key
       s3_secret_access_key = minio_iam_service_account.loki_sa.secret_key
+      s3_insecure          = true
       domain               = var.service_base_domain
       config               = file("${local.jobs}/monitoring/loki/config.yml")
     }
@@ -92,7 +91,8 @@ resource "nomad_job" "vector" {
   hcl2 {
     vars = {
       version = "0.34.2-debian"
-      domain = var.service_base_domain
+      domain  = var.service_base_domain
+      vector_config = file("${local.jobs}/monitoring/vector/config.toml")
     }
   }
 }

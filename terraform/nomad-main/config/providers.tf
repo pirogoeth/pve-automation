@@ -25,8 +25,8 @@ provider "nomad" {
 }
 
 provider "minio" {
-  minio_server   = "s3.2811rrt.net"
-  minio_user     = nomad_job.minio.hcl2[0].vars.root_username
-  minio_password = nomad_job.minio.hcl2[0].vars.root_password
-  minio_ssl      = true
+  minio_server   = var.minio_server
+  minio_user     = var.minio_username
+  minio_password = var.minio_password
+  minio_ssl      = var.minio_ssl
 }
