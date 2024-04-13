@@ -18,6 +18,10 @@ variable "s3_secret_access_key" {
   type = string
 }
 
+variable "s3_insecure" {
+  type = string
+}
+
 variable "version" {
   type = string
 }
@@ -92,6 +96,7 @@ S3_REGION=${var.s3_region}
 S3_BUCKET_NAME=${var.s3_bucket_name}
 S3_ACCESS_KEY_ID=${var.s3_access_key_id}
 S3_SECRET_ACCESS_KEY=${var.s3_secret_access_key}
+S3_INSECURE=${var.s3_insecure}
         EOH
       }
 

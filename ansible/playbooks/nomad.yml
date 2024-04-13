@@ -11,17 +11,30 @@
     vars:
       tf_project_path: "{{ (playbook_dir, '..', '..', 'terraform', 'nomad-main', 'infra')|path_join }}"
   
-  - name: Add nomad nodes
+  - name: Add nomad server nodes
     add_host:
       name: "{{ item['name'] }}"
-      groups: [nomad]
+      groups: [nomad, "nomad_{{item['attributes']['nomad_role']|default('client')}}"]
       ansible_host: "{{ item['ip'] }}"
       ansible_user: "{{ item['user'] }}"
       ansible_python_interpreter: /usr/bin/python3
       tf_project_path: "{{ tf_project_path }}"
       tf_state_outputs: "{{ _terraform_outputs }}"
       attributes: "{{ item['attributes'] }}"
-    loop: "{{ _terraform_outputs['nomad_inventory']['value'] }}"
+    loop: "{{ _terraform_outputs['nomad_server_inventory']['value'] }}"
+    changed_when: false
+
+  - name: Add nomad client nodes
+    add_host:
+      name: "{{ item['name'] }}"
+      groups: [nomad, "nomad_{{item['attributes']['nomad_role']|default('client')}}"]
+      ansible_host: "{{ item['ip'] }}"
+      ansible_user: "{{ item['user'] }}"
+      ansible_python_interpreter: /usr/bin/python3
+      tf_project_path: "{{ tf_project_path }}"
+      tf_state_outputs: "{{ _terraform_outputs }}"
+      attributes: "{{ item['attributes'] }}"
+    loop: "{{ _terraform_outputs['nomad_client_inventory']['value'] }}"
     changed_when: false
 
 - ansible.builtin.import_playbook: "base.yml"

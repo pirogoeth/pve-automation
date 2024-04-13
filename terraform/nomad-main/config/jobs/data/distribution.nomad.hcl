@@ -112,7 +112,7 @@ storage:
     regionendpoint: ${REGISTRY_STORAGE_S3_REGIONENDPOINT}
     bucket: ${REGISTRY_STORAGE_S3_BUCKET}
     encrypt: false
-    secure: true
+    secure: false
   delete:
     enabled: true
   redirect:

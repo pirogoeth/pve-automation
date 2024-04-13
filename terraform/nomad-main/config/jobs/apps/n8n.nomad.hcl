@@ -2,14 +2,6 @@ variable "version" {
   type = string
 }
 
-variable "volume_name_data" {
-  type = string
-}
-
-variable "volume_name_local_files" {
-  type = string
-}
-
 variable "domain" {
   type = string
 }
@@ -30,22 +22,36 @@ job "n8n" {
       port "http" {
         to = 5678
       }
+
+      port "redis" {
+        to = 6379
+      }
     }
 
-    volume "data" {
-      type            = "csi"
-      source          = var.volume_name_data
-      read_only       = false
-      attachment_mode = "file-system"
-      access_mode     = "single-node-writer"
-    }
+    task "redis" {
+      driver = "docker"
 
-    volume "local-files" {
-      type            = "csi"
-      source          = var.volume_name_local_files
-      read_only       = false
-      attachment_mode = "file-system"
-      access_mode     = "single-node-writer"
+      config {
+        image = "docker.io/library/redis:7.2-alpine"
+        force_pull = true
+
+        args = [
+          "--save", "60", "1",
+          "--appendonly", "yes"
+        ]
+
+        ports = ["redis"]
+
+        volumes = [
+          "/data/n8n-redis:/data",
+        ]
+      }
+
+      resources {
+        cpu = 128
+        memory = 128
+        memory_max = 256
+      }
     }
 
     task "n8n" {
@@ -61,6 +67,11 @@ job "n8n" {
           appname                  = "n8n"
           vector_stdout_parse_mode = "plain"
         }
+
+        volumes = [
+          "/data/n8n-data:/home/node/.n8n",
+          "/data/n8n-local-files:/local-files",
+        ]
       }
 
       env {
@@ -78,16 +89,6 @@ job "n8n" {
         NODE_FUNCTION_ALLOW_EXTERNAL = "*"
         N8N_METRICS                  = "true"
         QUEUE_HEALTH_CHECK_ACTIVE    = "true"
-      }
-
-      volume_mount {
-        volume      = "data"
-        destination = "/home/node/.n8n"
-      }
-
-      volume_mount {
-        volume      = "local-files"
-        destination = "/local-files"
       }
 
       resources {

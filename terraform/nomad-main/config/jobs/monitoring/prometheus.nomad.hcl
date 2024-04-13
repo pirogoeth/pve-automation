@@ -2,10 +2,6 @@ variable "version" {
   type = string
 }
 
-variable "volume_name" {
-  type = string
-}
-
 variable "domain" {
   type = string
 }
@@ -31,14 +27,6 @@ job "prometheus" {
       }
     }
 
-    volume "data" {
-      type            = "csi"
-      source          = var.volume_name
-      read_only       = false
-      attachment_mode = "file-system"
-      access_mode     = "single-node-writer"
-    }
-
     task "prometheus" {
       driver       = "docker"
       kill_timeout = "120s"
@@ -61,6 +49,7 @@ job "prometheus" {
         ports = ["http"]
 
         volumes = [
+          "/data/prometheus-data:/prometheus",
           "local/prometheus.yml:/etc/prometheus/prometheus.yml:ro",
           "/opt/nomad/tls:/opt/nomad/tls:ro",
         ]
@@ -173,11 +162,6 @@ EOH
         cpu        = 256
         memory     = 128
         memory_max = 2048
-      }
-
-      volume_mount {
-        volume      = "data"
-        destination = "/prometheus"
       }
 
       service {

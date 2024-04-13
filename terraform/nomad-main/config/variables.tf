@@ -26,7 +26,7 @@ locals {
   namespaces = [
     nomad_namespace.apps,
     nomad_namespace.continuous_integration,
-    nomad_namespace.csi_drivers,
+    # nomad_namespace.csi_drivers,
     nomad_namespace.data,
     nomad_namespace.system,
     nomad_namespace.monitoring,

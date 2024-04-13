@@ -38,37 +38,75 @@ locals {
   last_image    = [for build in local.manifest.builds : build if build.packer_run_uuid == local.last_run_uuid][0]
 }
 
-module "instances" {
+module "server_instances" {
   source = "../../modules/proxmox-instances"
 
   proxmox_node          = var.proxmox_node
-  proxmox_resource_pool = "nomad-main"
-  instance_prefix       = "nomad-main"
+  proxmox_resource_pool = "nomad-main-2"
+  instance_prefix       = "nomad-main-server"
   startup_options       = "order=100,up=30"
 
   source_template = local.last_image.custom_data.template_name
 
   authorized_keys_file = abspath(join("/", [path.module, "..", "..", "resources", "authorized_keys"]))
 
-  domain_name = "main.nomad.2811rrt.net"
+  domain_name = "nm2.2811rrt.net"
   nameserver  = "10.100.0.11"
 
-  # 10.100.10.32 -> 10.100.10.47 (14 hosts available)
-  subnet          = "10.100.10.32/28"
+  # 10.100.10.64 -> 10.100.10.79 (14 hosts available)
+  subnet          = "10.100.10.64/28"
   network_gateway = "10.100.10.1"
 
   instance_count = 3
   shape = {
-    cores          = 2
+    cores          = 1
     sockets        = 1
-    memory         = 1024 * 12
+    memory         = 1024 * 2
     storage_type   = "virtio"
     storage_id     = "local-lvm"
     user           = "ubuntu"
     network_bridge = "vmbr1"
     network_tag    = 20
 
-    disk_size = "64G"
+    disk_size = "128G"
+  }
+  attributes = {
+    "nomad_role" = "server"
+  }
+}
+
+
+module "client_default_instances" {
+  source = "../../modules/proxmox-instances"
+
+  proxmox_node          = var.proxmox_node
+  proxmox_resource_pool = "nomad-main-2"
+  instance_prefix       = "nomad-main-client"
+  startup_options       = "order=100,up=30"
+
+  source_template = local.last_image.custom_data.template_name
+
+  authorized_keys_file = abspath(join("/", [path.module, "..", "..", "resources", "authorized_keys"]))
+
+  domain_name = "nm2.2811rrt.net"
+  nameserver  = "10.100.0.11"
+
+  # 10.100.10.32 -> 10.100.10.47 (14 hosts available)
+  subnet          = "10.100.10.32/28"
+  network_gateway = "10.100.10.1"
+
+  instance_count = 1
+  shape = {
+    cores          = 8
+    sockets        = 1
+    memory         = 1024 * 32
+    storage_type   = "virtio"
+    storage_id     = "local-lvm"
+    user           = "ubuntu"
+    network_bridge = "vmbr1"
+    network_tag    = 20
+
+    disk_size = "128G"
     extra_disks = [
       {
         type    = "virtio"
@@ -88,15 +126,16 @@ module "instances" {
     ]
   }
   attributes = {
+    "nomad_role" = "client"
     "nomad_node_pool" = "default"
   }
 }
 
-module "gpu_instances" {
+module "client_gpu_instances" {
   source = "../../modules/proxmox-instances"
 
   proxmox_node          = var.proxmox_node
-  proxmox_resource_pool = "nomad-main"
+  proxmox_resource_pool = "nomad-main-2"
   instance_prefix       = "nomad-main-gpu"
   startup_options       = "order=100,up=30"
 
@@ -104,7 +143,7 @@ module "gpu_instances" {
 
   authorized_keys_file = abspath(join("/", [path.module, "..", "..", "resources", "authorized_keys"]))
 
-  domain_name = "main.nomad.2811rrt.net"
+  domain_name = "nm2.2811rrt.net"
   nameserver  = "10.100.0.11"
 
   # 10.100.10.48 -> 10.100.10.63 (14 hosts available)
@@ -113,8 +152,8 @@ module "gpu_instances" {
 
   instance_count = 1
   shape = {
-    cores          = 2
-    sockets        = 2
+    cores          = 8
+    sockets        = 1
     memory         = 1024 * 32
     storage_type   = "virtio"
     storage_id     = "local-lvm"
@@ -122,7 +161,7 @@ module "gpu_instances" {
     network_bridge = "vmbr1"
     network_tag    = 20
 
-    disk_size = "64G"
+    disk_size = "128G"
     extra_disks = [
       {
         type    = "virtio"
@@ -142,10 +181,18 @@ module "gpu_instances" {
     ]
   }
   attributes = {
+    "nomad_role" = "client"
     "nomad_node_pool" = "gpu"
   }
 }
 
-output "nomad_inventory" {
-  value = concat(module.instances.inventory, module.gpu_instances.inventory)
+output "nomad_server_inventory" {
+  value = module.server_instances.inventory
+}
+
+output "nomad_client_inventory" {
+  value = concat(
+    module.client_default_instances.inventory,
+    module.client_gpu_instances.inventory,
+  )
 }

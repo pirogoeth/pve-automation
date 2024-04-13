@@ -2,10 +2,6 @@ variable "version" {
   type = string
 }
 
-variable "volume_name_db_data" {
-  type = string
-}
-
 variable "domain" {
   type = string
 }
@@ -45,6 +41,7 @@ job "coder" {
       config {
         image      = "ghcr.io/coder/coder:v${var.version}"
         force_pull = true
+        group_add  = ["999"]
 
         ports = ["http", "metrics"]
 
@@ -53,6 +50,10 @@ job "coder" {
           vector_stdout_parse_mode = "plain"
           vector_stderr_parse_mode = "plain"
         }
+
+        volumes = [
+          "/var/run/docker.sock:/var/run/docker.sock"
+        ]
       }
 
       env {
@@ -62,7 +63,6 @@ job "coder" {
         CODER_PROMETHEUS_ADDRESS             = "0.0.0.0:7081"
         CODER_PROMETHEUS_COLLECT_AGENT_STATS = "true"
         CODER_PROMETHEUS_COLLECT_DB_METRICS  = "true"
-
       }
 
       template {
@@ -82,21 +82,30 @@ EOH
         provider = "nomad"
 
         tags = [
-          "prometheus.io/scrape=true",
-          "prometheus.io/path=/metrics",
-
           "traefik.enable=true",
-          "traefik.http.routers.coder.rule=Host(`code.${var.domain}`)",
+          "traefik.http.routers.coder.rule=HostRegexp(`code.${var.domain}`)",
           "traefik.http.routers.coder.entrypoints=web-secure",
           "traefik.http.routers.coder.service=coder",
           "traefik.http.routers.coder.tls=true",
+          "traefik.http.routers.coder.tls.certresolver=letsencrypt-prod",
           "traefik.http.services.coder.loadbalancer.passhostheader=true",
         ]
       }
 
+      service {
+        port     = "metrics"
+        provider = "nomad"
+
+        tags = [
+          "prometheus.io/scrape=true",
+          "prometheus.io/path=/metrics",
+        ]
+      }
+
       resources {
-        cpu    = 256
-        memory = 512
+        cpu        = 256
+        memory     = 512
+        memory_max = 2048
       }
     }
   }
@@ -112,14 +121,6 @@ EOH
       }
     }
 
-    volume "data" {
-      type            = "csi"
-      source          = var.volume_name_db_data
-      read_only       = false
-      attachment_mode = "file-system"
-      access_mode     = "single-node-writer"
-    }
-
     task "postgres" {
       driver = "docker"
 
@@ -128,6 +129,8 @@ EOH
         force_pull = true
 
         ports = ["postgres"]
+
+        volumes = ["/data/coder-db-postgres:/var/lib/postgresql/data"]
       }
 
       env {
@@ -136,14 +139,10 @@ EOH
         POSTGRES_DB       = "coder"
       }
 
-      volume_mount {
-        volume      = "data"
-        destination = "/var/lib/postgresql/data"
-      }
-
       resources {
-        cpu    = 256
-        memory = 256
+        cpu        = 256
+        memory     = 256
+        memory_max = 512
       }
 
       service {

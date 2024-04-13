@@ -1,4 +1,5 @@
 gitHooks:
   pre-commit:
     - check-kustomization-content.sh
-    - ensure-no-plaintext-secrets.sh
+    - dont-commit-secrets.sh
+    - sops-ensure-no-plaintext-secrets.sh

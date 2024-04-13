@@ -2,10 +2,14 @@
 
 - include_tasks: ./install/main.yml
   vars: &common_vars
-    bootstrap_host: "{{ groups['nomad'][0] }}"
-    normal_hosts: "{{ groups['nomad'][1:]|default([]) }}"
+    bootstrap_host: "{{ groups['nomad_server'][0] }}"
+    server_hosts: "{{ groups['nomad_server'][1:]|default([]) }}"
+    client_hosts: "{{ groups['nomad_client'] }}"
     is_bootstrap_host: "{{ inventory_hostname == bootstrap_host }}"
-    is_normal_host: "{{ not is_bootstrap_host }}"
+    is_server_host: "{{ inventory_hostname in server_hosts }}"
+    is_client_host: "{{ inventory_hostname in client_hosts }}"
+    # "normal" host is any host that is not a bootstrap node
+    is_normal_host: "{{ is_server_host or is_client_host }}"
     is_clustered: "{{ groups['nomad'] | length > 1 }}"
 
 - include_tasks: ./configure.yml

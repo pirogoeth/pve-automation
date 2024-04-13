@@ -20,7 +20,7 @@ resource "nomad_job" "cloudflared" {
 
   hcl2 {
     vars = {
-      version = "2023.10.0"
+      version = "2024.1.4"
       token   = var.cloudflare_tunnel_token
     }
   }

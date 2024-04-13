@@ -2,10 +2,6 @@ variable "version" {
   type = string
 }
 
-variable "volume_name" {
-  type = string
-}
-
 variable "domain" {
   type = string
 }
@@ -28,14 +24,6 @@ job "grafana" {
       }
     }
 
-    volume "data" {
-      type            = "csi"
-      source          = var.volume_name
-      read_only       = false
-      attachment_mode = "file-system"
-      access_mode     = "single-node-writer"
-    }
-
     task "grafana" {
       driver = "docker"
 
@@ -47,12 +35,12 @@ job "grafana" {
 
         labels {
           appname = "grafana"
+          vector_stdout_parse_mode = "logfmt"
         }
-      }
 
-      volume_mount {
-        volume      = "data"
-        destination = "/var/lib/grafana"
+        volumes = [
+          "/data/grafana-data:/var/lib/grafana",
+        ]
       }
 
       resources {

@@ -15,10 +15,6 @@ variable "version" {
   default = "2.0.51"
 }
 
-variable "volume_name" {
-  type = string
-}
-
 job "miniflux" {
   namespace   = "apps"
   type        = "service"
@@ -42,14 +38,6 @@ job "miniflux" {
       port "http" {
         to = 3000
       }
-    }
-
-    volume "data" {
-      type            = "csi"
-      source          = var.volume_name
-      read_only       = false
-      attachment_mode = "file-system"
-      access_mode     = "single-node-writer"
     }
 
     task "miniflux" {
@@ -109,17 +97,16 @@ job "miniflux" {
       config {
         image      = "postgres:15-alpine"
         force_pull = true
+
+        volumes = [
+          "/data/miniflux-db-postgres:/var/lib/postgresql/data"
+        ]
       }
 
       env {
         POSTGRES_USER     = "miniflux"
         POSTGRES_PASSWORD = "miniflux"
         POSTGRES_DB       = "miniflux"
-      }
-
-      volume_mount {
-        volume      = "data"
-        destination = "/var/lib/postgresql/data"
       }
 
       resources {
