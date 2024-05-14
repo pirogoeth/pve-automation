@@ -1,8 +1,11 @@
+all: plan
+
 plan: *.tf jobs/**
-ifneq ($(target),)
-	terraform plan -var-file ../../vars/nomad.tfvars -out plan -target "$(target)"
+ifdef target
+	terraform plan -var-file ../../vars/nomad.tfvars -out plan -target "$(target)" || rm plan
+else
+	terraform plan -var-file ../../vars/nomad.tfvars -out plan || rm plan
 endif
-	terraform plan -var-file ../../vars/nomad.tfvars -out plan
 
 .PHONY: apply
 apply: plan

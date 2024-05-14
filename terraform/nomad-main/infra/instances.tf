@@ -2,7 +2,7 @@ terraform {
   required_providers {
     proxmox = {
       source  = "Telmate/proxmox"
-      version = "2.9.11"
+      version = "~>2.9"
     }
 
     macaddress = {
@@ -44,7 +44,7 @@ module "server_instances" {
   proxmox_node          = var.proxmox_node
   proxmox_resource_pool = "nomad-main-2"
   instance_prefix       = "nomad-main-server"
-  startup_options       = "order=100,up=30"
+  startup_options       = "order=1,up=0"
 
   source_template = local.last_image.custom_data.template_name
 
@@ -82,7 +82,7 @@ module "client_default_instances" {
   proxmox_node          = var.proxmox_node
   proxmox_resource_pool = "nomad-main-2"
   instance_prefix       = "nomad-main-client"
-  startup_options       = "order=100,up=30"
+  startup_options       = "order=50,up=60"
 
   source_template = local.last_image.custom_data.template_name
 
@@ -126,7 +126,7 @@ module "client_default_instances" {
     ]
   }
   attributes = {
-    "nomad_role" = "client"
+    "nomad_role"      = "client"
     "nomad_node_pool" = "default"
   }
 }
@@ -137,7 +137,7 @@ module "client_gpu_instances" {
   proxmox_node          = var.proxmox_node
   proxmox_resource_pool = "nomad-main-2"
   instance_prefix       = "nomad-main-gpu"
-  startup_options       = "order=100,up=30"
+  startup_options       = "order=50,up=60"
 
   source_template = local.last_image.custom_data.template_name
 
@@ -181,10 +181,62 @@ module "client_gpu_instances" {
     ]
   }
   attributes = {
-    "nomad_role" = "client"
+    "nomad_role"      = "client"
     "nomad_node_pool" = "gpu"
   }
 }
+
+module "minio_instances" {
+  source = "../../modules/proxmox-instances"
+
+  proxmox_node          = var.proxmox_node
+  proxmox_resource_pool = "minio"
+  instance_prefix       = "minio"
+  startup_options       = "order=5,up=10"
+
+  source_template = local.last_image.custom_data.template_name
+
+  authorized_keys_file = abspath(join("/", [path.module, "..", "..", "resources", "authorized_keys"]))
+
+  domain_name = "s.2811rrt.net"
+  nameserver  = "10.100.0.11"
+
+  # 10.100.10.8 -> 10.100.10.15 (7 hosts available)
+  subnet          = "10.100.10.8/29"
+  network_gateway = "10.100.10.1"
+
+  instance_count = 1
+  shape = {
+    cores          = 2
+    sockets        = 2
+    memory         = 1024 * 16
+    storage_type   = "virtio"
+    storage_id     = "local-lvm"
+    user           = "ubuntu"
+    network_bridge = "vmbr1"
+    network_tag    = 20
+
+    disk_size = "64G"
+    extra_disks = [
+      {
+        type    = "virtio"
+        size    = "64G"
+        storage = "ext1"
+      },
+      {
+        type    = "virtio"
+        size    = "64GG"
+        storage = "ext2"
+      },
+      {
+        type    = "virtio"
+        size    = "64G"
+        storage = "ext3"
+      },
+    ]
+  }
+}
+
 
 output "nomad_server_inventory" {
   value = module.server_instances.inventory
@@ -195,4 +247,8 @@ output "nomad_client_inventory" {
     module.client_default_instances.inventory,
     module.client_gpu_instances.inventory,
   )
+}
+
+output "minio_server_inventory" {
+  value = module.minio_instances.inventory
 }

@@ -79,15 +79,23 @@ scrape_configs:
   static_configs:
   - targets:
     # TODO(seanj): Slick way to template out all active nomad clients?
-    - 10.100.10.32:4646
-    - 10.100.10.33:4646
-    - 10.100.10.34:4646
+    - 10.100.10.32:4646  # client-0
+    - 10.100.10.48:4646  # gpu-0
+    - 10.100.10.64:4646  # server-0
+    - 10.100.10.65:4646  # server-1
+    - 10.100.10.66:4646  # server-2
   scheme: https
   metrics_path: /v1/metrics
   params:
     format: [prometheus]
   tls_config:
     insecure_skip_verify: true
+
+{{ with nomadVar "prometheus/scrape-configs" -}}
+{{- range $configKey, $configItem := .}}
+- job_name: "{{ $configKey }}"
+  <<: {{ $configItem }}
+{{end}}{{end}}
 
 {{- with nomadVar "managed-namespaces" -}}
 {{$namespaces := .json.Value|parseJSON}}

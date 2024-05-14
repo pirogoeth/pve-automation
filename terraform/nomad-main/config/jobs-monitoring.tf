@@ -8,8 +8,8 @@ resource "nomad_job" "prometheus" {
 
   hcl2 {
     vars = {
-      version     = "2.48.1"
-      domain      = var.service_base_domain
+      version = "2.48.1"
+      domain  = var.service_base_domain
     }
   }
 }
@@ -19,8 +19,8 @@ resource "nomad_job" "grafana" {
 
   hcl2 {
     vars = {
-      version     = "10.0.10"
-      domain      = var.service_base_domain
+      version = "10.0.10"
+      domain  = var.service_base_domain
     }
   }
 }
@@ -83,6 +83,11 @@ resource "nomad_job" "loki" {
       config               = file("${local.jobs}/monitoring/loki/config.yml")
     }
   }
+
+  depends_on = [
+    minio_s3_bucket.loki,
+    minio_iam_service_account.loki_sa,
+  ]
 }
 
 resource "nomad_job" "vector" {
@@ -90,8 +95,8 @@ resource "nomad_job" "vector" {
 
   hcl2 {
     vars = {
-      version = "0.34.2-debian"
-      domain  = var.service_base_domain
+      version       = "0.34.2-debian"
+      domain        = var.service_base_domain
       vector_config = file("${local.jobs}/monitoring/vector/config.toml")
     }
   }

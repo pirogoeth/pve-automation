@@ -133,11 +133,28 @@
     file_type: directory
   register: cuda_bases
 
+- name: Check if /etc/environment contains a PATH
+  lineinfile:
+    path: /etc/environment
+    regexp: '^PATH="(.*)"'
+    line: 'PATH='
+    state: present
+  check_mode: true
+  register: has_path
+  failed_when: false
+
+- name: Add PATH to /etc/environment
+  lineinfile:
+    path: /etc/environment
+    line: 'PATH="{{ ansible_env.PATH }}"'
+    state: present
+  when: has_path.changed
+
 - name: Add cuda to PATH
   lineinfile:
     path: /etc/environment
     regexp: '^PATH="(.*)"'
-    line: 'PATH="{{ item }}/bin:\1"'
+    line: 'PATH="{{ item.path }}/bin:\1"'
     backrefs: true
     state: present
   loop: "{{ cuda_bases.files }}"

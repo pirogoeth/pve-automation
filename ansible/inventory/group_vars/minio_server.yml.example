@@ -1,0 +1,8 @@
+---
+
+traefik_acme_email: "admin@example.com"
+traefik_acme_cloudflare_email: "admin@example.com"
+traefik_acme_cloudflare_apikey: "blah"
+
+minio_root_user: "root"
+minio_root_password: "changeme"

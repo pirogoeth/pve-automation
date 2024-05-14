@@ -26,18 +26,19 @@ variable "source_template" {
 
 variable "shape" {
   type = object({
-    cores        = optional(number, 2),
-    sockets      = optional(number, 1),
-    memory       = optional(number, 4096),
-    storage_type = optional(string, "scsi"),
-    storage_id   = optional(string, "local-lvm"),
-    disk_size    = optional(string, "10G"),
+    cores            = optional(number, 2),
+    sockets          = optional(number, 1),
+    memory           = optional(number, 4096),
+    storage_type     = optional(string, "scsi"),
+    storage_id       = optional(string, "local-lvm"),
+    disk_size        = optional(string, "10G"),
+    root_disk_backup = optional(bool, false),
     extra_disks = optional(list(object({
       size    = string,
       storage = optional(string, "local-lvm"),
       type    = optional(string, "virtio"),
       cache   = optional(string, "none"),
-      backup  = optional(number, 0),
+      backup  = optional(bool, false),
     })), []),
     user           = optional(string, "k3s"),
     network_bridge = optional(string, "vmbr0"),

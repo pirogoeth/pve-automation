@@ -58,7 +58,7 @@ variable "minio_server" {
 }
 
 variable "minio_ssl" {
-  type = bool
+  type    = bool
   default = false
 }
 
@@ -70,4 +70,9 @@ variable "minio_username" {
 variable "minio_password" {
   type    = string
   default = "minio"
+}
+
+variable "minio_metrics_bearer_token" {
+  type      = string
+  sensitive = true
 }

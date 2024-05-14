@@ -27,6 +27,7 @@ resource "proxmox_vm_qemu" "instance" {
   os_type     = "cloud-init"
   agent       = 1
   startup     = var.startup_options
+  onboot      = var.startup_options != null ? true : false
 
   clone = var.source_template
 
@@ -46,6 +47,7 @@ resource "proxmox_vm_qemu" "instance" {
     type    = var.shape.storage_type
     storage = var.shape.storage_id
     size    = var.shape.disk_size
+    backup  = var.shape.root_disk_backup
   }
 
   dynamic "disk" {

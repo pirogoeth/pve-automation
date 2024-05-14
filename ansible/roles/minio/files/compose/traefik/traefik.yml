@@ -1,0 +1,68 @@
+---
+
+log:
+  level: "DEBUG"
+  format: "json"
+
+accessLog:
+  format: "json"
+
+entryPoints:
+  web:
+    address: ":80"
+    http:
+      redirections:
+        entryPoint:
+          to: "web-secure"
+          scheme: "https"
+  web-secure:
+    address: ":443"
+    http:
+      tls: {}
+  traefik-api:
+    address: ":8889"
+  traefik-metrics:
+    address: ":8891"
+
+certificatesResolvers:
+  letsencrypt:
+    acme:
+      caServer: "https://acme-staging-v02.api.letsencrypt.org/directory"
+      storage: "/acme/staging.json"
+      dnsChallenge:
+        provider: "cloudflare"
+        delayBeforeCheck: 15
+        resolvers: ["1.1.1.1:53", "8.8.8.8:53"]
+  letsencrypt_prod:
+    acme:
+      caServer: "https://acme-v02.api.letsencrypt.org/directory"
+      storage: "/acme/production.json"
+      dnsChallenge:
+        provider: "cloudflare"
+        delayBeforeCheck: 15
+        resolvers: ["1.1.1.1:53", "8.8.8.8:53"]
+
+api:
+  dashboard: true
+  disabledashboardad: true
+
+ping:
+  entryPoint: "traefik-api"
+  manualRouting: true
+
+metrics:
+  prometheus:
+    buckets:
+      - 0.1
+      - 0.3
+      - 1.2
+      - 5.0
+    addEntryPointsLabels: true
+    addServicesLabels: true
+    addRoutersLabels: true
+    entryPoint: "traefik-metrics"
+
+providers:
+  file:
+    directory: "/config/conf.d"
+    watch: true

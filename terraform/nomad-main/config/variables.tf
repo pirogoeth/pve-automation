@@ -42,3 +42,17 @@ resource "nomad_variable" "namespaces" {
     json = jsonencode([for namespace in local.namespaces : namespace.name])
   }
 }
+
+resource "nomad_variable" "prometheus_scrape_configs" {
+  path      = "prometheus/scrape-configs"
+  namespace = nomad_namespace.monitoring.id
+
+  items = {
+    minio-job = jsonencode({
+      bearer_token   = var.minio_metrics_bearer_token
+      metrics_path   = "/minio/v2/metrics/cluster"
+      scheme         = "https"
+      static_configs = [{ targets = ["s3.2811rrt.net:443"] }]
+    })
+  }
+}

@@ -160,3 +160,31 @@
 #     min = "16GiB"
 #   }
 # }
+
+module "nas_downloads_share" {
+  source = "../../modules/nomad-volume-nfs"
+
+  namespace = "apps"
+  id        = "nfs-downloads"
+  nfs_host  = "10.100.0.6"
+  nfs_share = "/volume1/downloads"
+
+  depends_on = [
+    nomad_job.nfs_controller,
+    nomad_job.nfs_nodes,
+  ]
+}
+
+module "nas_plex_data_share" {
+  source = "../../modules/nomad-volume-nfs"
+
+  namespace = "apps"
+  id        = "nfs-plex-data"
+  nfs_host  = "10.100.0.6"
+  nfs_share = "/volume1/plex-data/config"
+
+  depends_on = [
+    nomad_job.nfs_controller,
+    nomad_job.nfs_nodes,
+  ]
+}

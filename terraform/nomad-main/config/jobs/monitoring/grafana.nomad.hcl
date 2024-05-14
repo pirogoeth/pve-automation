@@ -34,7 +34,7 @@ job "grafana" {
         ports = ["http"]
 
         labels {
-          appname = "grafana"
+          appname                  = "grafana"
           vector_stdout_parse_mode = "logfmt"
         }
 
@@ -44,8 +44,9 @@ job "grafana" {
       }
 
       resources {
-        cpu    = 256
-        memory = 1024
+        cpu        = 512
+        memory     = 1024
+        memory_max = 2048
       }
 
       service {

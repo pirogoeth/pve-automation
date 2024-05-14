@@ -31,6 +31,11 @@ job "vector" {
     }
 
     network {
+      port "receiver" {
+        to     = 6000
+        static = 6000
+      }
+
       port "http" {
         to = 8686
       }
@@ -58,7 +63,7 @@ job "vector" {
       }
 
       env {
-        DOMAIN = "${var.domain}"
+        DOMAIN = var.domain
       }
 
       template {

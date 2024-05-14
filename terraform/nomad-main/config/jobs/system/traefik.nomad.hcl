@@ -92,6 +92,7 @@ job "traefik" {
           "traefik.http.routers.traefik-api.entrypoints=traefik-api",
           "traefik.http.routers.traefik-api.service=api@internal",
           "traefik.http.routers.traefik-api.tls=true",
+          "traefik.http.routers.traefik-api.tls.certResolver=letsencrypt",
           "traefik.http.routers.traefik-ping.rule=PathPrefix(`/ping`)",
           "traefik.http.routers.traefik-ping.entrypoints=traefik-api",
           "traefik.http.routers.traefik-ping.service=ping@internal",
@@ -228,7 +229,6 @@ metrics:
     addServicesLabels: true
     addRoutersLabels: true
     entryPoint: "traefik-metrics"
-
 
 {{- with nomadVar "managed-namespaces" -}}
 {{$namespaces := .json.Value|parseJSON}}

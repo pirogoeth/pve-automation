@@ -17,6 +17,11 @@ type = "internal_metrics"
 [sources.vector_logs]
 type = "internal_logs"
 
+[sources.vector_receiver]
+type = "vector"
+address = "0.0.0.0:6000"
+version = "2"
+
 [transforms.vector_data_labels]
 type = "remap"
 inputs = ["vector_logs", "vector_metrics"]
@@ -60,7 +65,7 @@ source = """
       data, err = parse_apache_log(.message, format: "combined")
     } else {
       log({"record": ., "parse_mode": parse_mode})
-      data = .
+      data = {"message":.}
     }
   } else if exists(.msg) {
     if parse_mode == "json" {
@@ -75,7 +80,7 @@ source = """
       data, err = parse_apache_log(.msg, format: "combined")
     } else {
       log({"record": ., "parse_mode": parse_mode})
-      data = .
+      data = {"message":.}
     }
   } else {
     if parse_mode == "json" {
@@ -90,7 +95,7 @@ source = """
       data, err = parse_apache_log(., format: "combined")
     } else {
       log({"record": ., "parse_mode": parse_mode})
-      data = .
+      data = {"message":.}
     }
   }
 
@@ -137,7 +142,7 @@ source = """
 
 [sinks.loki]
 type = "loki"
-inputs = ["docker_metadata", "vector_data_labels", "host_auth_parser"]
+inputs = ["docker_metadata", "vector_data_labels", "host_auth_parser", "vector_receiver"]
 endpoint = "https://loki.${DOMAIN}"
 encoding.codec = "json"
 labels = { "appname" = "{{appname}}", "component" = "{{component}}" }
@@ -149,5 +154,5 @@ encoding.codec = "json"
 
 [sinks.scrape_endpoint]
 type = "prometheus_exporter"
-inputs = ["vector_metrics"]
+inputs = ["vector_metrics", "vector_receiver"]
 address = "0.0.0.0:8687"
