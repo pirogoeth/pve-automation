@@ -27,7 +27,7 @@ resource "nomad_job" "n8n" {
   hcl2 {
     vars = {
       domain  = var.service_base_domain
-      version = "1.32.1"
+      version = "1.40.0"
     }
   }
 }
@@ -85,8 +85,8 @@ resource "nomad_job" "clusterplex" {
 
   hcl2 {
     vars = {
-      version     = "latest"
-      domain      = var.service_base_domain
+      version               = "latest"
+      domain                = var.service_base_domain
       volume_name_downloads = module.nas_downloads_share.volume_id
       volume_name_plex_data = module.nas_plex_data_share.volume_id
     }
