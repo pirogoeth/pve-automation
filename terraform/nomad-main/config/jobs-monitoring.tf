@@ -101,3 +101,13 @@ resource "nomad_job" "vector" {
     }
   }
 }
+
+resource "nomad_job" "nvidia_exporter" {
+  jobspec = file("${local.jobs}/monitoring/nvidia-exporter.nomad.hcl")
+
+  hcl2 {
+    vars = {
+      version = "1.2.0"
+    }
+  }
+}

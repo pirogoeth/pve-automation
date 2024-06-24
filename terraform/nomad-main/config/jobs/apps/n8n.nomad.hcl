@@ -32,7 +32,7 @@ job "n8n" {
       driver = "docker"
 
       config {
-        image = "docker.io/library/redis:7.2-alpine"
+        image      = "docker.io/library/redis:7.2-alpine"
         force_pull = true
 
         args = [
@@ -48,8 +48,8 @@ job "n8n" {
       }
 
       resources {
-        cpu = 128
-        memory = 128
+        cpu        = 128
+        memory     = 128
         memory_max = 256
       }
     }
@@ -92,8 +92,9 @@ job "n8n" {
       }
 
       resources {
-        cpu    = 256
-        memory = 1024
+        cpu        = 512
+        memory     = 1024
+        memory_max = 4096
       }
 
       service {

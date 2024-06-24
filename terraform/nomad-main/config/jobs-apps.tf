@@ -80,8 +80,26 @@ resource "nomad_job" "localai" {
   }
 }
 
-resource "nomad_job" "clusterplex" {
-  jobspec = file("${local.jobs}/apps/clusterplex.nomad.hcl")
+# resource "nomad_job" "clusterplex" {
+#   jobspec = file("${local.jobs}/apps/clusterplex.nomad.hcl")
+
+#   hcl2 {
+#     vars = {
+#       version               = "latest"
+#       domain                = var.service_base_domain
+#       volume_name_downloads = module.nas_downloads_share.volume_id
+#       volume_name_plex_data = module.nas_plex_data_share.volume_id
+#     }
+#   }
+
+#   depends_on = [
+#     module.nas_downloads_share,
+#     module.nas_plex_data_share,
+#   ]
+# }
+
+resource "nomad_job" "plex" {
+  jobspec = file("${local.jobs}/apps/plex.nomad.hcl")
 
   hcl2 {
     vars = {
