@@ -27,7 +27,7 @@ resource "nomad_job" "n8n" {
   hcl2 {
     vars = {
       domain  = var.service_base_domain
-      version = "1.40.0"
+      version = "1.47.1"
     }
   }
 }
