@@ -47,6 +47,10 @@ source = """
     parse_mode = downcase(%docker_logs.labels.vector_stdout_parse_mode) ?? "json"
   }
 
+  if parse_mode == "drop" {
+    abort "message dropped by explicit parse mode"
+  }
+
   originalMessage = to_string(.) ?? "can't convert to string"
 
   data = {}
@@ -138,6 +142,19 @@ type = "remap"
 inputs = ["host_auth"]
 source = """
   ., .error = parse_linux_authorization(.)
+"""
+
+[transforms.add_missing_labels]
+type = "remap"
+inputs = ["docker_metadata", "vector_data_labels", "host_auth_parser", "vector_receiver"]
+source = """
+  if !exists(.appname) {
+    .appname = "<empty>"
+  }
+
+  if !exists(.component) {
+    .component = "<empty>"
+  }
 """
 
 [sinks.loki]

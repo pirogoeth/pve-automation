@@ -1,0 +1,103 @@
+---
+
+# *** PREP
+
+- name: Install mdadm and lvm2
+  apt:
+    name: "{{ pkg }}"
+    state: present
+  loop:
+    - mdadm
+    - lvm2
+  loop_control:
+    loop_var: "pkg"
+
+- name: Make mdadm staging directory
+  file:
+    path: /opt/automation/mdadm
+    state: directory
+    owner: root
+    group: root
+    recurse: true
+
+- name: Push mdadm-mkconf script
+  copy:
+    src: mdadm-mkconf
+    dest: /opt/automation/mdadm/mkconf
+    owner: root
+    group: root
+    mode: 0755
+
+# *** CREATE
+
+- name: Create the RAID array
+  command: >
+    mdadm --create /dev/{{ raid_name }}
+    --level={{ raid_level }}
+    --raid-devices={{ raid_devices | length }}
+    {{ raid_devices | join(' ') }}
+    {{ "--run" if run_anyway else "" }}
+  args:
+    creates: /dev/{{ raid_name }}
+
+- name: Get current mdadm config
+  slurp:
+    src: /etc/mdadm/mdadm.conf
+  failed_when: false
+  register: mdadm_conf_current
+
+- name: Make new mdadm config
+  command: /opt/automation/mdadm/mkconf
+  register: mdadm_conf_new
+  changed_when: "mdadm_conf_new.stdout != (mdadm_conf_current.content | b64decode)"
+
+- name: Write new mdadm.conf
+  copy:
+    content: "{{ mdadm_conf_new.stdout }}"
+    dest: /etc/mdadm/mdadm.conf
+    owner: root
+    group: root
+    mode: 0644
+  when: mdadm_conf_new.changed
+  register: write_new_mdadm_conf
+
+- name: Update initramfs on Debian-based systems
+  command: update-initramfs -u
+  when: write_new_mdadm_conf.changed
+
+- name: Create volume group
+  lvg:
+    vg: "{{ volume_group }}"
+    pvs: "/dev/{{ raid_name }}"
+
+- name: Create logical volume
+  lvol:
+    vg: "{{ volume_group }}"
+    lv: "{{ logical_volume }}"
+    size: 100%FREE
+    shrink: false
+
+- name: Create filesystem on the logical volume
+  filesystem:
+    fstype: "{{ fs_type }}"
+    dev: "/dev/{{ volume_group }}/{{ logical_volume }}"
+
+- name: Create mount point
+  file:
+    path: "{{ mount_point }}"
+    state: directory
+
+- name: Mount the logical volume
+  mount:
+    path: "{{ mount_point }}"
+    src: "/dev/{{ volume_group }}/{{ logical_volume }}"
+    fstype: "{{ fs_type }}"
+    state: mounted
+
+- name: Ensure logical volume is mounted on boot
+  mount:
+    path: "{{ mount_point }}"
+    src: "/dev/{{ volume_group }}/{{ logical_volume }}"
+    fstype: "{{ fs_type }}"
+    opts: defaults
+    state: present

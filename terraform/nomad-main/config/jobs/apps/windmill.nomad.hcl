@@ -2,10 +2,6 @@ variable "domain" {
   type = string
 }
 
-variable "version" {
-  type = string
-}
-
 variable "postgres_version" {
   type    = string
   default = "16"
@@ -79,7 +75,8 @@ job "windmill" {
       driver = "docker"
 
       config {
-        image      = "oci.${var.domain}/library/windmill:main"
+        image      = "ghcr.io/windmill-labs/windmill:main"
+        image_pull_timeout = "15m"
         force_pull = true
 
         ports = ["http"]
@@ -135,7 +132,8 @@ EOH
       driver = "docker"
 
       config {
-        image      = "oci.${var.domain}/library/windmill:main"
+        image      = "ghcr.io/windmill-labs/windmill:main"
+        image_pull_timeout = "15m"
         force_pull = true
 
         volumes = [
@@ -175,7 +173,8 @@ EOH
       driver = "docker"
 
       config {
-        image      = "oci.${var.domain}/library/windmill:main"
+        image      = "ghcr.io/windmill-labs/windmill:main"
+        image_pull_timeout = "15m"
         force_pull = true
       }
 
@@ -210,7 +209,8 @@ EOH
       driver = "docker"
 
       config {
-        image      = "oci.${var.domain}/library/windmill:main"
+        image      = "ghcr.io/windmill-labs/windmill:main"
+        image_pull_timeout = "15m"
         force_pull = true
 
         volumes = [
@@ -257,7 +257,8 @@ EOH
       driver = "docker"
 
       config {
-        image      = "oci.${var.domain}/library/windmill-lsp:main"
+        image      = "ghcr.io/windmill-labs/windmill-lsp:main"
+        image_pull_timeout = "15m"
         force_pull = true
 
         ports = ["http"]

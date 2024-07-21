@@ -16,7 +16,7 @@ resource "nomad_job" "miniflux" {
       admin_username = "sean"
       admin_password = random_string.miniflux_admin_password.result
       domain         = var.service_base_domain
-      version        = "2.0.51"
+      version        = "2.1.4"
     }
   }
 }
@@ -62,23 +62,22 @@ resource "nomad_job" "windmill" {
 
   hcl2 {
     vars = {
-      version          = ""
       domain           = var.service_base_domain
       postgres_version = "16"
     }
   }
 }
 
-resource "nomad_job" "localai" {
-  jobspec = file("${local.jobs}/apps/localai.nomad.hcl")
+# resource "nomad_job" "localai" {
+#   jobspec = file("${local.jobs}/apps/localai.nomad.hcl")
 
-  hcl2 {
-    vars = {
-      version = "latest"
-      domain  = var.service_base_domain
-    }
-  }
-}
+#   hcl2 {
+#     vars = {
+#       version = "latest"
+#       domain  = var.service_base_domain
+#     }
+#   }
+# }
 
 # resource "nomad_job" "clusterplex" {
 #   jobspec = file("${local.jobs}/apps/clusterplex.nomad.hcl")
@@ -114,4 +113,15 @@ resource "nomad_job" "plex" {
     module.nas_downloads_share,
     module.nas_plex_data_share,
   ]
+}
+
+resource "nomad_job" "ollama" {
+  jobspec = file("${local.jobs}/apps/ollama.nomad.hcl")
+
+  hcl2 {
+    vars = {
+      version = "latest"
+      domain  = var.service_base_domain
+    }
+  }
 }

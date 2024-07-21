@@ -27,7 +27,10 @@
   - name: Add nomad client nodes
     add_host:
       name: "{{ item['name'] }}"
-      groups: [nomad, "nomad_{{item['attributes']['nomad_role']|default('client')}}"]
+      groups:
+      - nomad
+      - "nomad_{{item['attributes']['nomad_role']|default('client')}}"
+      - "nomad_node_pool_{{item['attributes']['nomad_node_pool']|default('default')}}"
       ansible_host: "{{ item['ip'] }}"
       ansible_user: "{{ item['user'] }}"
       ansible_python_interpreter: /usr/bin/python3

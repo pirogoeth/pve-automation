@@ -8,8 +8,8 @@ resource "nomad_job" "changedetection" {
 
   hcl2 {
     vars = {
-      version     = "0.45.16"
-      domain      = var.service_base_domain
+      version = "0.45.26"
+      domain  = var.service_base_domain
     }
   }
 }

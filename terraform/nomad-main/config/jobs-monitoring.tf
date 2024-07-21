@@ -19,7 +19,7 @@ resource "nomad_job" "grafana" {
 
   hcl2 {
     vars = {
-      version = "10.0.10"
+      version = "11.1.0"
       domain  = var.service_base_domain
     }
   }
@@ -72,7 +72,7 @@ resource "nomad_job" "loki" {
 
   hcl2 {
     vars = {
-      version              = "2.9.3"
+      version              = "3.1.0"
       s3_endpoint_url      = var.minio_server
       s3_region            = "global"
       s3_bucket_name       = minio_s3_bucket.loki.bucket

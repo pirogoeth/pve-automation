@@ -1,6 +1,8 @@
 BIN := .venv/bin
+PATH := $(BIN):$(PATH)
 PIP := $(BIN)/python -m pip
 PY := $(BIN)/python
+export PATH := $(PATH)
 
 init:
 	asdf install python 3.11.7
@@ -9,8 +11,12 @@ init:
 	$(PY) -m ensurepip
 	$(PIP) install --upgrade pip
 	$(PIP) install -r requirements.txt
-	ansible-galaxy collection install -r collections/requirements.yml
-	ansible-galaxy role install -r roles/requirements.yml
+	make refresh-galaxy
+
+.PHONY: refresh-galaxy
+refresh-galaxy:
+	ansible-galaxy collection install -r collections/requirements.yml $(args)
+	ansible-galaxy role install -r roles/requirements.yml $(args)
 
 .PHONY: run-play
 run-play:

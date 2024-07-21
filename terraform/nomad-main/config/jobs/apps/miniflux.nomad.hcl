@@ -57,6 +57,7 @@ job "miniflux" {
 
       env {
         DATABASE_URL             = "postgres://miniflux:miniflux@localhost/miniflux?sslmode=disable"
+        BASE_URL                 = "https://news.${var.domain}"
         RUN_MIGRATIONS           = "1"
         CREATE_ADMIN             = "1"
         ADMIN_USERNAME           = var.admin_username
@@ -64,11 +65,13 @@ job "miniflux" {
         LISTEN_ADDR              = ":3000"
         METRICS_COLLECTOR        = "1"
         METRICS_ALLOWED_NETWORKS = "127.0.0.0/8,172.17.0.0/12,10.100.10.0/23"
+        FETCH_NEBULA_WATCH_TIME  = "1"
       }
 
       resources {
-        cpu    = 256
-        memory = 256
+        cpu        = 256
+        memory     = 256
+        memory_max = 1024
       }
 
       service {

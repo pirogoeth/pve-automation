@@ -54,7 +54,7 @@ job "vector" {
 
         args = ["-c", "local/vector.toml"]
 
-        ports = ["http", "metrics"]
+        ports = ["http", "metrics", "receiver"]
 
         volumes = [
           "/var/log:/host/var/log:ro",
