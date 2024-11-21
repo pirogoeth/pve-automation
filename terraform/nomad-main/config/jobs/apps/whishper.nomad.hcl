@@ -153,7 +153,7 @@ job "whishper" {
 
         tags = [
           "traefik.enable=true",
-          "traefik.http.routers.whisper.rule=HostRegexp(`whisper.${var.domain}`)",
+          "traefik.http.routers.whisper.rule=Host(`whisper.${var.domain}`)",
           "traefik.http.routers.whisper.entrypoints=web-secure",
           "traefik.http.routers.whisper.service=whisper",
           "traefik.http.routers.whisper.tls=true",

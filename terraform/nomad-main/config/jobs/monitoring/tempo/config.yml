@@ -1,0 +1,71 @@
+server:
+  http_listen_port: {{ env "NOMAD_PORT_http" }}
+  grpc_listen_port: {{ env "NOMAD_PORT_grpc" }}
+  register_instrumentation: true
+
+distributor:
+  receivers:
+    otlp:
+      protocols:
+        http:
+          endpoint: "0.0.0.0:{{ env "NOMAD_PORT_ingest_http" }}"
+        grpc:
+          endpoint: "0.0.0.0:{{ env "NOMAD_PORT_ingest_grpc" }}"
+
+ingester:
+  lifecycler:
+    ring:
+      replication_factor: 1
+
+memberlist:
+  abort_if_cluster_join_fails: false
+  gossip_nodes: 1
+  bind_port: {{ env "NOMAD_PORT_gossip" }}
+  join_members:
+{{range nomadService "tempo-monolith-gossip"}}
+{{- if (not (eq .Address (env "NOMAD_IP_gossip"))) }}
+  - {{.Address}}:{{.Port}}
+{{end}}{{end}}
+
+compactor:
+  compaction:
+    block_retention: 168h
+
+metrics_generator:
+  registry:
+    external_labels:
+      source: tempo
+      cluster: docker-compose
+  storage:
+    path: {{ env "NOMAD_ALLOC_DIR" }}/data/generator/wal
+    remote_write:
+      - url: https://prometheus.${DOMAIN}/api/v1/write
+        send_exemplars: true
+  traces_storage:
+    path: {{ env "NOMAD_ALLOC_DIR" }}/data/generator/traces/wal
+
+storage:
+  trace:
+    backend: s3
+    s3:
+      # bucket: tempo
+      # endpoint: minio:9000
+      # access_key: tempo
+      # secret_key: supersecret
+      # insecure: true
+      endpoint: ${S3_ENDPOINT_URL}
+      bucket: ${S3_BUCKET_NAME}
+      region: ${S3_REGION}
+      access_key: ${S3_ACCESS_KEY_ID}
+      secret_key: ${S3_SECRET_ACCESS_KEY}
+      forcepathstyle: true
+      insecure: ${S3_INSECURE}
+    wal:
+      path: {{ env "NOMAD_ALLOC_DIR" }}/data/wal
+    local:
+      path: {{ env "NOMAD_ALLOC_DIR" }}/data/blocks
+
+overrides:
+  defaults:
+    metrics_generator:
+      processors: ['service-graphs', 'span-metrics', 'local-blocks']

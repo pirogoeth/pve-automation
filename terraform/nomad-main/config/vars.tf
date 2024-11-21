@@ -76,3 +76,25 @@ variable "minio_metrics_bearer_token" {
   type      = string
   sensitive = true
 }
+
+variable "langfuse_mailgun_smtp_password" {
+  type      = string
+  sensitive = true
+}
+
+variable "dns_server" {
+  type = string
+}
+
+variable "dns_key_name" {
+  type = string
+}
+
+variable "dns_key_algo" {
+  type = string
+}
+
+variable "dns_key_secret" {
+  type = string
+  sensitive = true
+}

@@ -26,10 +26,10 @@ locals {
   namespaces = [
     nomad_namespace.apps,
     nomad_namespace.continuous_integration,
-    # nomad_namespace.csi_drivers,
     nomad_namespace.data,
     nomad_namespace.system,
     nomad_namespace.monitoring,
+    nomad_namespace.security,
   ]
 }
 
@@ -53,6 +53,16 @@ resource "nomad_variable" "prometheus_scrape_configs" {
       metrics_path   = "/minio/v2/metrics/cluster"
       scheme         = "https"
       static_configs = [{ targets = ["s3.2811rrt.net:443"] }]
+    })
+    postgres-hass = jsonencode({
+      metrics_path   = "/metrics"
+      scheme         = "http"
+      static_configs = [{ targets = ["10.100.0.7:9187"] }]
+    })
+    postgres-hass-host = jsonencode({
+      metrics_path   = "/metrics"
+      scheme         = "http"
+      static_configs = [{ targets = ["10.100.0.7:9100"] }]
     })
   }
 }

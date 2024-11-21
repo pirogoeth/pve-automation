@@ -20,7 +20,7 @@ job "ollama" {
     network {
       mode = "bridge"
 
-      port "http" {
+      port "http-api" {
         to = 11434
       }
     }
@@ -34,10 +34,11 @@ job "ollama" {
 
         runtime = "nvidia"
 
-        ports = ["http"]
+        ports = ["http-api"]
 
         labels {
           appname                  = "ollama"
+          component                = "llm-server"
           vector_stdout_parse_mode = "plain"
           vector_stderr_parse_mode = "plain"
         }
@@ -62,11 +63,11 @@ job "ollama" {
       service {
         name     = "ollama"
         provider = "nomad"
-        port     = "http"
+        port     = "http-api"
 
         tags = [
           "traefik.enable=true",
-          "traefik.http.routers.ollama.rule=HostRegexp(`ollama.${var.domain}`)",
+          "traefik.http.routers.ollama.rule=Host(`ollama.${var.domain}`)",
           "traefik.http.routers.ollama.entrypoints=web-secure",
           "traefik.http.routers.ollama.tls=true",
           "traefik.http.routers.ollama.tls.certresolver=letsencrypt-prod",
@@ -74,7 +75,7 @@ job "ollama" {
 
         check {
           type     = "http"
-          port     = "http"
+          port     = "http-api"
           path     = "/"
           interval = "120s"
           timeout  = "2s"

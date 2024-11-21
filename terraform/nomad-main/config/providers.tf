@@ -1,12 +1,17 @@
 terraform {
   required_providers {
+
+    dns = {
+      source = "hashicorp/dns"
+      version = "~> 3.4"
+    }
     minio = {
       source  = "aminueza/minio"
-      version = "~> 2.0"
+      version = "~> 2.4"
     }
     nomad = {
       source  = "hashicorp/nomad"
-      version = "~> 2.0"
+      version = "~> 2.3"
     }
     random = {
       source  = "hashicorp/random"
@@ -29,4 +34,13 @@ provider "minio" {
   minio_user     = var.minio_username
   minio_password = var.minio_password
   minio_ssl      = var.minio_ssl
+}
+
+provider "dns" {
+  update {
+    server = var.dns_server
+    key_name = var.dns_key_name
+    key_algorithm = var.dns_key_algo
+    key_secret = var.dns_key_secret
+  }
 }

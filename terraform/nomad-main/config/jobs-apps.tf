@@ -3,6 +3,17 @@ resource "nomad_namespace" "apps" {
   description = "Apps"
 }
 
+locals {
+  coder_version = "2.7.0"
+  miniflux_version = "2.1.4"
+  n8n_version = "1.62.3"
+  plex_version = "latest"
+  ollama_version = "latest"
+  faster_whisper_version = "latest-cuda"
+  langfuse_version = "2"
+  handbrake_version = "latest"
+}
+
 resource "random_string" "miniflux_admin_password" {
   length  = 12
   special = true
@@ -16,7 +27,7 @@ resource "nomad_job" "miniflux" {
       admin_username = "sean"
       admin_password = random_string.miniflux_admin_password.result
       domain         = var.service_base_domain
-      version        = "2.1.4"
+      version        = local.miniflux_version
     }
   }
 }
@@ -27,7 +38,7 @@ resource "nomad_job" "n8n" {
   hcl2 {
     vars = {
       domain  = var.service_base_domain
-      version = "1.48.0"
+      version = local.n8n_version
     }
   }
 }
@@ -37,7 +48,7 @@ resource "nomad_job" "coder" {
 
   hcl2 {
     vars = {
-      version = "2.7.0"
+      version = local.coder_version
       domain  = var.service_base_domain
     }
   }
@@ -102,7 +113,7 @@ resource "nomad_job" "plex" {
 
   hcl2 {
     vars = {
-      version               = "latest"
+      version               = local.plex_version
       domain                = var.service_base_domain
       volume_name_downloads = module.nas_downloads_share.volume_id
       volume_name_plex_data = module.nas_plex_data_share.volume_id
@@ -120,7 +131,70 @@ resource "nomad_job" "ollama" {
 
   hcl2 {
     vars = {
-      version = "latest"
+      version = local.ollama_version
+      domain  = var.service_base_domain
+    }
+  }
+}
+
+# resource "nomad_job" "open_webui" {
+#   jobspec = file("${local.jobs}/apps/open-webui.nomad.hcl")
+
+#   hcl2 {
+#     vars = {
+#       open_webui_version = "main"
+#       pipelines_version  = "main"
+#       domain             = var.service_base_domain
+#     }
+#   }
+# }
+
+# resource "nomad_job" "phoenix" {
+#   jobspec = file("${local.jobs}/apps/phoenix.nomad.hcl")
+
+#   hcl2 {
+#     vars = {
+#       version = "version-4.16.1-nonroot"
+#       domain  = var.service_base_domain
+#     }
+#   }
+# }
+
+resource "nomad_job" "langfuse" {
+  jobspec = file("${local.jobs}/apps/langfuse.nomad.hcl")
+
+  hcl2 {
+    vars = {
+      version               = local.langfuse_version
+      domain                = var.service_base_domain
+      mailgun_smtp_username = "langfuse@mail.${var.service_base_domain}"
+      mailgun_smtp_password = var.langfuse_mailgun_smtp_password
+    }
+  }
+}
+
+resource "nomad_job" "handbrake" {
+  jobspec = file("${local.jobs}/apps/handbrake.nomad.hcl")
+
+  hcl2 {
+    vars = {
+      version               = local.handbrake_version
+      domain                = var.service_base_domain
+      volume_name_downloads = module.nas_downloads_share.volume_id
+    }
+  }
+
+  depends_on = [
+    module.nas_downloads_share,
+  ]
+}
+
+resource "nomad_job" "faster_whisper" {
+  jobspec = file("${local.jobs}/apps/faster-whisper.nomad.hcl")
+
+  hcl2 {
+    vars = {
+      version = local.faster_whisper_version
       domain  = var.service_base_domain
     }
   }

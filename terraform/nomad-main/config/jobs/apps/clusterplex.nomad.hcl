@@ -85,7 +85,7 @@ job "clusterplex" {
           "prometheus.io/path=/metrics",
 
           "traefik.enable=true",
-          "traefik.http.routers.clusterplex.rule=HostRegexp(`clusterplex.${var.domain}`)",
+          "traefik.http.routers.clusterplex.rule=Host(`clusterplex.${var.domain}`)",
           "traefik.http.routers.clusterplex.entrypoints=web-secure",
           "traefik.http.routers.clusterplex.tls=true",
           "traefik.http.routers.clusterplex.tls.certresolver=letsencrypt-prod",

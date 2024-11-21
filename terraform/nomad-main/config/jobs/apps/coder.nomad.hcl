@@ -83,7 +83,7 @@ EOH
 
         tags = [
           "traefik.enable=true",
-          "traefik.http.routers.coder.rule=HostRegexp(`code.${var.domain}`)",
+          "traefik.http.routers.coder.rule=Host(`code.${var.domain}`)",
           "traefik.http.routers.coder.entrypoints=web-secure",
           "traefik.http.routers.coder.service=coder",
           "traefik.http.routers.coder.tls=true",

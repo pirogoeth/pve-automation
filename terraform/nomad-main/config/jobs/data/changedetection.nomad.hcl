@@ -1,3 +1,7 @@
+variable "namespace" {
+  type = string
+}
+
 variable "version" {
   type = string
 }
@@ -7,7 +11,7 @@ variable "domain" {
 }
 
 job "changedetection" {
-  namespace   = "data"
+  namespace   = var.namespace
   datacenters = ["dc1"]
   type        = "service"
 
@@ -52,8 +56,8 @@ job "changedetection" {
 
         data = <<EOF
 {{$allocID := env "NOMAD_ALLOC_ID" -}}
-{{range nomadService 1 $allocID "changedetection-browser-playwright-chromium"}}
-PLAYWRIGHT_DRIVER_URL=ws://{{.Address}}:{{.Port}}/?stealth=1&--disable-web-security=true
+{{range nomadService 1 $allocID "changedetection-browser-sockpuppet"}}
+PLAYWRIGHT_DRIVER_URL=ws://{{.Address}}:{{.Port}}
 {{end}}
 EOF
       }
@@ -89,29 +93,26 @@ EOF
       port "playwright" {
         to = 3000
       }
+
+      port "sockpuppet" {
+        to = 3000
+      }
     }
 
-    task "playwright-chromium" {
+    task "sockpuppet" {
       driver = "docker"
 
       env {
         SCREEN_WIDTH            = 1920
         SCREEN_HEIGHT           = 1024
         SCREEN_DEPTH            = 16
-        ENABLE_DEBUGGER         = false
-        PREBOOT_CHROME          = true
-        CONNECTION_TIMEOUT      = 300000
-        MAX_CONCURRENT_SESSIONS = 2
-        CHROME_REFRESH_TIME     = 600000
-        DEFAULT_BLOCK_ADS       = true
-        DEFAULT_STEALTH         = true
-        #             Ignore HTTPS errors, like for self-signed certs
-        #           DEFAULT_IGNORE_HTTPS_ERRORS = true
+        MAX_CONCURRENT_CHROME_PROCESSES = 10
       }
 
       config {
-        image = "browserless/chrome:1.60-chrome-stable"
-        ports = ["playwright"]
+        image = "dgtlmoon/sockpuppetbrowser:latest"
+        ports = ["sockpuppet"]
+        # cap_add = ["SYS_ADMIN"]
       }
 
       resources {
@@ -121,7 +122,7 @@ EOF
       }
 
       service {
-        port     = "playwright"
+        port     = "sockpuppet"
         provider = "nomad"
       }
     }

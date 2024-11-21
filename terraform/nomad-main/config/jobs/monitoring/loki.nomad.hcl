@@ -146,7 +146,7 @@ S3_INSECURE=${var.s3_insecure}
       resources {
         cpu        = 500
         memory     = 256
-        memory_max = 512
+        memory_max = 1024
       }
     }
   }

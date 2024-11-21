@@ -32,25 +32,34 @@ job "prometheus" {
       kill_timeout = "120s"
       kill_signal  = "SIGTERM"
 
+      action "reload-configuration" {
+        command = "/usr/bin/env"
+        args = [
+          "curl", "-v", "-X", "POST", "http://localhost:9090/-/reload"
+        ]
+      }
+
       config {
         image      = "docker.io/prom/prometheus:v${var.version}"
         force_pull = true
 
         args = [
-          "--config.file=/etc/prometheus/prometheus.yml",
+          "--config.file=${NOMAD_ALLOC_DIR}/prometheus.yml",
           "--log.format=json",
           "--storage.tsdb.path=/prometheus",
           "--storage.tsdb.retention.time=30d",
           "--web.console.libraries=/usr/share/prometheus/console_libraries",
           "--web.console.templates=/usr/share/prometheus/consoles",
           "--web.enable-lifecycle",
+          "--web.enable-remote-write-receiver",
+          "--enable-feature=exemplar-storage",
+          "--enable-feature=native-histograms",
         ]
 
         ports = ["http"]
 
         volumes = [
           "/data/prometheus-data:/prometheus",
-          "local/prometheus.yml:/etc/prometheus/prometheus.yml:ro",
           "/opt/nomad/tls:/opt/nomad/tls:ro",
         ]
 
@@ -60,7 +69,7 @@ job "prometheus" {
       }
 
       template {
-        destination   = "local/prometheus.yml"
+        destination   = "${NOMAD_ALLOC_DIR}/prometheus.yml"
         change_mode   = "signal"
         change_signal = "SIGHUP"
 

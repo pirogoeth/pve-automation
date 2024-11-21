@@ -107,7 +107,7 @@ job "n8n" {
           "prometheus.io/scrape_interval=15s",
 
           "traefik.enable=true",
-          "traefik.http.routers.n8n.rule=Host(`n8n.${var.domain}`) && !Path(`/healthz`, `/metrics`)",
+          "traefik.http.routers.n8n.rule=Host(`n8n.${var.domain}`) && !(Path(`/healthz`) || Path(`/metrics`))",
           "traefik.http.routers.n8n.entrypoints=web,web-secure",
           "traefik.http.routers.n8n.tls=true",
           # Temporarily(?) using the defaultGeneratedCert

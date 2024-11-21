@@ -107,7 +107,7 @@ EOF
         port     = "http"
         tags = [
           "traefik.enable=true",
-          "traefik.http.routers.plex.rule=HostRegexp(`plex.${var.domain}`)",
+          "traefik.http.routers.plex.rule=Host(`plex.${var.domain}`)",
           "traefik.http.routers.plex.entrypoints=web-secure",
           "traefik.http.routers.plex.tls=true",
           "traefik.http.routers.plex.tls.certresolver=letsencrypt-prod",

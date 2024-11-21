@@ -88,7 +88,7 @@ job "traefik" {
 
         tags = [
           "traefik.enable=true",
-          "traefik.http.routers.traefik-api.rule=Host(`traefik.${var.domain}`) && PathPrefix(`/api`, `/dashboard`)",
+          "traefik.http.routers.traefik-api.rule=Host(`traefik.${var.domain}`) && (PathPrefix(`/api`) || PathPrefix(`/dashboard`))",
           "traefik.http.routers.traefik-api.entrypoints=traefik-api",
           "traefik.http.routers.traefik-api.service=api@internal",
           "traefik.http.routers.traefik-api.tls=true",
@@ -248,6 +248,13 @@ providers:
     exposedByDefault: false
     namespaces: {{toJSON $namespaces}}
 {{end}}
+
+tracing:
+  serviceName: traefik
+  sampleRate: 0.8
+  otlp:
+    grpc:
+      endpoint: "tempo-ingest.${var.domain}:443"
 
 experimental:
   plugins:

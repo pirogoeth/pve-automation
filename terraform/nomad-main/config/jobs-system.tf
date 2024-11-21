@@ -8,7 +8,7 @@ resource "nomad_job" "traefik" {
 
   hcl2 {
     vars = {
-      version           = "v2.10.7"
+      version           = "v3.0.4"
       domain            = var.service_base_domain
       letsencrypt_email = var.letsencrypt_email
     }
