@@ -8,7 +8,7 @@ terraform {
     }
     minio = {
       source  = "aminueza/minio"
-      version = "~> 2.4"
+      version = "~> 3.2"
     }
     nomad = {
       source  = "hashicorp/nomad"

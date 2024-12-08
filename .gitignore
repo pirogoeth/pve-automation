@@ -27,3 +27,4 @@ terraform/vars/*
 !terraform/vars/README.md
 
 manifests
+.env
