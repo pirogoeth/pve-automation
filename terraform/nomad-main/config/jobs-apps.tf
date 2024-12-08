@@ -4,14 +4,14 @@ resource "nomad_namespace" "apps" {
 }
 
 locals {
-  coder_version = "2.7.0"
-  miniflux_version = "2.1.4"
-  n8n_version = "1.62.3"
-  plex_version = "latest"
-  ollama_version = "latest"
+  coder_version          = "2.7.0"
+  miniflux_version       = "2.1.4"
+  n8n_version            = "1.62.3"
+  plex_version           = "latest"
+  ollama_version         = "latest"
   faster_whisper_version = "latest-cuda"
-  langfuse_version = "2"
-  handbrake_version = "latest"
+  langfuse_version       = "2"
+  handbrake_version      = "latest"
 }
 
 resource "random_string" "miniflux_admin_password" {
@@ -173,21 +173,21 @@ resource "nomad_job" "langfuse" {
   }
 }
 
-resource "nomad_job" "handbrake" {
-  jobspec = file("${local.jobs}/apps/handbrake.nomad.hcl")
-
-  hcl2 {
-    vars = {
-      version               = local.handbrake_version
-      domain                = var.service_base_domain
-      volume_name_downloads = module.nas_downloads_share.volume_id
-    }
-  }
-
-  depends_on = [
-    module.nas_downloads_share,
-  ]
-}
+# resource "nomad_job" "handbrake" {
+#   jobspec = file("${local.jobs}/apps/handbrake.nomad.hcl")
+# 
+#   hcl2 {
+#     vars = {
+#       version               = local.handbrake_version
+#       domain                = var.service_base_domain
+#       volume_name_downloads = module.nas_downloads_share.volume_id
+#     }
+#   }
+# 
+#   depends_on = [
+#     module.nas_downloads_share,
+#   ]
+# }
 
 resource "nomad_job" "faster_whisper" {
   jobspec = file("${local.jobs}/apps/faster-whisper.nomad.hcl")

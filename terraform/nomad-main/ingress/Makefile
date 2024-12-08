@@ -1,4 +1,4 @@
 TF := tofu
-VARS_NAME := proxmox
+VARS_NAME := ingress
 
 include ../base.mk

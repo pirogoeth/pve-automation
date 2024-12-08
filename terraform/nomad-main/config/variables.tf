@@ -54,15 +54,20 @@ resource "nomad_variable" "prometheus_scrape_configs" {
       scheme         = "https"
       static_configs = [{ targets = ["s3.2811rrt.net:443"] }]
     })
-    postgres-hass = jsonencode({
-      metrics_path   = "/metrics"
-      scheme         = "http"
-      static_configs = [{ targets = ["10.100.0.7:9187"] }]
-    })
     postgres-hass-host = jsonencode({
       metrics_path   = "/metrics"
       scheme         = "http"
       static_configs = [{ targets = ["10.100.0.7:9100"] }]
+    })
+    postgres-shared = jsonencode({
+      metrics_path   = "/metrics"
+      scheme         = "http"
+      static_configs = [{ targets = ["10.100.0.6:9187"] }]
+    })
+    nas-host-metrics = jsonencode({
+      metrics_path   = "/metrics"
+      scheme         = "http"
+      static_configs = [{ targets = ["10.100.0.6:9100"] }]
     })
   }
 }

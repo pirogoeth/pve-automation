@@ -43,6 +43,11 @@ job "grafana" {
         ]
       }
 
+      env {
+        GF_SERVER_DOMAIN   = "grafana.${var.domain}"
+        GF_SERVER_ROOT_URL = "https://grafana.${var.domain}"
+      }
+
       resources {
         cpu        = 512
         memory     = 1024

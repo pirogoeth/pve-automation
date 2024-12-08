@@ -1,3 +1,13 @@
+locals {
+  prometheus_version           = "2.53.1"
+  grafana_version              = "11.3.1"
+  loki_version                 = "3.1.0"
+  tempo_version                = "2.5.0"
+  vector_version               = "0.34.2-debian"
+  nvidia_exporter_version      = "1.2.0"
+  qbittorrent_exporter_version = "v1.5.1"
+}
+
 resource "nomad_namespace" "monitoring" {
   name        = "monitoring"
   description = "Application monitoring"
@@ -8,7 +18,7 @@ resource "nomad_job" "prometheus" {
 
   hcl2 {
     vars = {
-      version = "2.53.1"
+      version = local.prometheus_version
       domain  = var.service_base_domain
     }
   }
@@ -19,59 +29,9 @@ resource "nomad_job" "grafana" {
 
   hcl2 {
     vars = {
-      version = "11.2.1"
+      version = local.grafana_version
       domain  = var.service_base_domain
     }
-  }
-}
-
-resource "minio_iam_user" "loki" {
-  name = "loki"
-}
-
-resource "minio_iam_user_policy_attachment" "loki_rw" {
-  user_name   = minio_iam_user.loki.name
-  policy_name = minio_iam_policy.loki_policy.name
-}
-
-resource "minio_iam_service_account" "loki_sa" {
-  target_user = minio_iam_user.loki.name
-
-  lifecycle {
-    ignore_changes = [policy]
-  }
-}
-
-resource "minio_s3_bucket" "loki" {
-  bucket = "loki"
-  acl    = "private"
-}
-
-resource "minio_iam_policy" "loki_policy" {
-  name = "loki-user-rw"
-  policy = jsonencode({
-    "Version" : "2012-10-17",
-    "Statement" : [
-      {
-        "Effect" : "Allow",
-        "Principal" : {
-          "AWS" : [
-            minio_iam_user.loki.id
-          ]
-        },
-        "Action" : [
-          "s3:*",
-        ],
-        "Resource" : [
-          "arn:aws:s3:::${minio_s3_bucket.loki.bucket}",
-          "arn:aws:s3:::${minio_s3_bucket.loki.bucket}/*",
-        ],
-      },
-    ],
-  })
-
-  lifecycle {
-    ignore_changes = [policy]
   }
 }
 
@@ -80,12 +40,12 @@ resource "nomad_job" "loki" {
 
   hcl2 {
     vars = {
-      version              = "3.1.0"
+      version              = local.loki_version
       s3_endpoint_url      = var.minio_server
       s3_region            = "global"
-      s3_bucket_name       = minio_s3_bucket.loki.bucket
-      s3_access_key_id     = minio_iam_service_account.loki_sa.access_key
-      s3_secret_access_key = minio_iam_service_account.loki_sa.secret_key
+      s3_bucket_name       = minio_s3_bucket.bucket["loki"].bucket
+      s3_access_key_id     = minio_iam_service_account.user_sa["loki"].access_key
+      s3_secret_access_key = minio_iam_service_account.user_sa["loki"].secret_key
       s3_insecure          = true
       domain               = var.service_base_domain
       config               = file("${local.jobs}/monitoring/loki/config.yml")
@@ -93,8 +53,8 @@ resource "nomad_job" "loki" {
   }
 
   depends_on = [
-    minio_s3_bucket.loki,
-    minio_iam_service_account.loki_sa,
+    minio_s3_bucket.bucket["loki"],
+    minio_iam_service_account.user_sa["loki"],
   ]
 }
 
@@ -103,7 +63,7 @@ resource "nomad_job" "vector" {
 
   hcl2 {
     vars = {
-      version       = "0.34.2-debian"
+      version       = local.vector_version
       domain        = var.service_base_domain
       vector_config = file("${local.jobs}/monitoring/vector/config.toml")
     }
@@ -115,7 +75,7 @@ resource "nomad_job" "nvidia_exporter" {
 
   hcl2 {
     vars = {
-      version = "1.2.0"
+      version = local.nvidia_exporter_version
     }
   }
 }
@@ -125,59 +85,8 @@ resource "nomad_job" "qbittorrent_exporter" {
 
   hcl2 {
     vars = {
-      version = "v1.5.1"
+      version = local.qbittorrent_exporter_version
     }
-  }
-}
-
-
-resource "minio_iam_user" "tempo" {
-  name = "tempo"
-}
-
-resource "minio_iam_user_policy_attachment" "tempo_rw" {
-  user_name   = minio_iam_user.tempo.name
-  policy_name = minio_iam_policy.tempo_policy.name
-}
-
-resource "minio_iam_service_account" "tempo_sa" {
-  target_user = minio_iam_user.tempo.name
-
-  lifecycle {
-    ignore_changes = [policy]
-  }
-}
-
-resource "minio_s3_bucket" "tempo" {
-  bucket = "tempo"
-  acl    = "private"
-}
-
-resource "minio_iam_policy" "tempo_policy" {
-  name = "tempo-user-rw"
-  policy = jsonencode({
-    "Version" : "2012-10-17",
-    "Statement" : [
-      {
-        "Effect" : "Allow",
-        "Principal" : {
-          "AWS" : [
-            minio_iam_user.tempo.id
-          ]
-        },
-        "Action" : [
-          "s3:*",
-        ],
-        "Resource" : [
-          "arn:aws:s3:::${minio_s3_bucket.tempo.bucket}",
-          "arn:aws:s3:::${minio_s3_bucket.tempo.bucket}/*",
-        ],
-      },
-    ],
-  })
-
-  lifecycle {
-    ignore_changes = [policy]
   }
 }
 
@@ -186,12 +95,12 @@ resource "nomad_job" "tempo" {
 
   hcl2 {
     vars = {
-      version              = "2.5.0"
+      version              = local.tempo_version
       s3_endpoint_url      = var.minio_server
       s3_region            = "global"
-      s3_bucket_name       = minio_s3_bucket.tempo.bucket
-      s3_access_key_id     = minio_iam_service_account.tempo_sa.access_key
-      s3_secret_access_key = minio_iam_service_account.tempo_sa.secret_key
+      s3_bucket_name       = minio_s3_bucket.bucket["tempo"].bucket
+      s3_access_key_id     = minio_iam_service_account.user_sa["tempo"].access_key
+      s3_secret_access_key = minio_iam_service_account.user_sa["tempo"].secret_key
       s3_insecure          = false
       domain               = var.service_base_domain
       config               = file("${local.jobs}/monitoring/tempo/config.yml")
@@ -199,7 +108,7 @@ resource "nomad_job" "tempo" {
   }
 
   depends_on = [
-    minio_s3_bucket.tempo,
-    minio_iam_service_account.tempo_sa,
+    minio_s3_bucket.bucket["tempo"],
+    minio_iam_service_account.user_sa["tempo"],
   ]
 }
