@@ -6,9 +6,10 @@
   tasks:
   - name: Read Terraform outputs
     set_fact:
-      _terraform_outputs: "{{ lookup('cloud.terraform.tf_output', project_path=tf_project_path) }}"
+      _terraform_outputs: "{{ lookup('cloud.terraform.tf_output', binary_path=tf_binary, project_path=tf_project_path) }}"
       tf_project_path: "{{ tf_project_path }}"
     vars:
+      tf_binary: "{{ 'tofu'|which }}"
       tf_project_path: "{{ (playbook_dir, '..', '..', 'terraform', 'clusters')|path_join }}"
   
   - name: Add k3s leaders

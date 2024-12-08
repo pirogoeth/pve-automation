@@ -1,8 +1,9 @@
 terraform {
-  required_providers {
+  backend "pg" {}
 
+  required_providers {
     dns = {
-      source = "hashicorp/dns"
+      source  = "hashicorp/dns"
       version = "~> 3.4"
     }
     minio = {
@@ -38,9 +39,10 @@ provider "minio" {
 
 provider "dns" {
   update {
-    server = var.dns_server
-    key_name = var.dns_key_name
+    server        = var.dns_server
+    key_name      = var.dns_key_name
     key_algorithm = var.dns_key_algo
-    key_secret = var.dns_key_secret
+    key_secret    = var.dns_key_secret
   }
 }
+

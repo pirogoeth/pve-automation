@@ -1,4 +1,6 @@
 terraform {
+  backend "pg" {}
+
   required_providers {
     proxmox = {
       source  = "Telmate/proxmox"
