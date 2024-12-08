@@ -48,7 +48,7 @@
     loop: "{{ _terraform_outputs['k3s_support_inventory']['value'] }}"
     changed_when: false
 
-- ansible.builtin.import_playbook: "base.yml"
+- ansible.builtin.import_playbook: "play-base.yml"
   tags: [base]
   vars:
     base_tailscale_up_skip: false
