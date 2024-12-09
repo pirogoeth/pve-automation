@@ -2,14 +2,23 @@
 
 - hosts: localhost
   tags: [always]
+  vars:
+    tf_binary: "{{ 'tofu'|which }}"
+    tf_project_path: "{{ (playbook_dir, '..', 'terraform', 'nomad-main', 'infra')|path_join }}"
   tasks:
+  - name: Initialize Terraform backend
+    command:
+      cmd: "{{ tf_binary }} init"
+      creates: "{{ (tf_project_path, '.terraform')|path_join }}"
+      chdir: "{{ tf_project_path }}"
+    when:
+    - tf_initialize_backend|default(false)
+
   - name: Read Terraform outputs
     set_fact:
       _terraform_outputs: "{{ lookup('cloud.terraform.tf_output', **args) }}"
       tf_project_path: "{{ tf_project_path }}"
     vars:
-      tf_binary: "{{ 'tofu'|which }}"
-      tf_project_path: "{{ (playbook_dir, '..', 'terraform', 'nomad-main', 'infra')|path_join }}"
       args:
         binary_path: "{{ tf_binary }}"
         project_path: "{{ tf_project_path }}"
