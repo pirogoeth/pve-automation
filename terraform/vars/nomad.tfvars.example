@@ -1,0 +1,40 @@
+// URL of any Nomad server instance
+nomad_url                      = "https://10.100.10.64:4646"
+
+// Path to Nomad TLS certificates
+ca_cert                        = "/home/user/.nomad/ca.pem"
+cli_cert                       = "/home/user/.nomad/cert.pem"
+cli_key                        = "/home/user/.nomad/key.pem"
+tls_skip_verify                = true
+
+// Base domain that will be provided to application jobspecs for defining traefik ingress tags
+service_base_domain            = "example.org"
+
+// Email address to use for letsencrypt configurations
+letsencrypt_email              = "admin@example.org"
+
+// Tunnel token to provide to cloudflared. Should be generated in the cloudflare UI
+cloudflare_tunnel_token        = "super long jwt token value"
+
+// apps/n8n specific - external address n8n should expect to receive webhooks on. the UI is NOT served here, but at n8n.${service_base_domain}.
+n8n_webhook_url                = "https://webhooks.example.org/"
+
+// apps/minio specific - location minio should expose s3api at. note that the console will be exposed at console.${minio_server} 
+minio_server                   = "s3.example.org"
+// apps/minio specific - username of minio admin user
+minio_username                 = "minio"
+// apps/minio specific - password of minio admin user
+minio_password                 = "minio admin user password lol!"
+minio_ssl                      = true
+// apps/minio specific - JWT-encoded bearer token that should be used by a metrics scraper
+minio_metrics_bearer_token     = "my jwt encoded minio metrics bearer token"
+
+// apps/langfuse specific - Mailgun SMTP password
+langfuse_mailgun_smtp_password = "my long mailgun smtp password
+
+// internal DNS configuration! connection details and TSIG key for sending updates to DNS server. 
+dns_server                     = "my.DNS.host"
+dns_key_name                   = "terraform."
+dns_key_algo                   = "hmac-sha256"
+dns_key_secret                 = "myDNSTSIGkey"
+

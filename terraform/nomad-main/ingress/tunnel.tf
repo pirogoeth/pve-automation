@@ -1,33 +1,6 @@
 locals {
   base_domain   = data.cloudflare_zone.main.name
   tunnel_domain = "${data.cloudflare_zero_trust_tunnel_cloudflared.tunnel.id}.cfargotunnel.com"
-  forwards = [
-    {
-      subdomain = "webhooks"
-      target    = "https://10.100.10.32:443"
-    },
-    {
-      subdomain = "code"
-      target    = "https://10.100.10.32:443"
-    },
-    {
-      subdomain = "wm"
-      target    = "https://10.100.10.32:443"
-      path      = "api/w/"
-    },
-    {
-      subdomain = "news"
-      target    = "https://10.100.10.32:443"
-    },
-    {
-      subdomain = "langfuse"
-      target    = "https://10.100.10.32:443"
-    },
-    {
-      subdomain = "grafana"
-      target    = "https://10.100.10.32:443"
-    }
-  ]
 }
 
 resource "cloudflare_zero_trust_tunnel_cloudflared_config" "tunnel_config" {
@@ -36,7 +9,7 @@ resource "cloudflare_zero_trust_tunnel_cloudflared_config" "tunnel_config" {
 
   config {
     dynamic "ingress_rule" {
-      for_each = local.forwards
+      for_each = var.tunnel_forwards
       content {
         hostname = "${ingress_rule.value["subdomain"]}.${local.base_domain}"
         path     = lookup(ingress_rule.value, "path", "")
@@ -57,7 +30,7 @@ resource "cloudflare_zero_trust_tunnel_cloudflared_config" "tunnel_config" {
 
 resource "cloudflare_record" "tunnelled_subdomain" {
   for_each = {
-    for item in local.forwards :
+    for item in var.tunnel_forwards :
     "${item.subdomain}.${local.base_domain}" => local.tunnel_domain
   }
 

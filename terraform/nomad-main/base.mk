@@ -1,5 +1,9 @@
 TF := tofu
 
+ENVFILE := $(shell mu find-upwards .env)
+include $(ENVFILE)
+export
+
 all: plan
 
 plan: *.tf

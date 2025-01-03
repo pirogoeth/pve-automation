@@ -43,3 +43,20 @@ services:
     - "8891:8891"
     command:
     - "--configfile=/config/traefik.yml"
+
+  vector:
+    image: docker.io/timberio/vector:nightly-distroless-static
+    pull_policy: always
+    restart: unless-stopped
+    command:
+      - -c
+      - /config/vector.toml
+    ports:
+      - 6000:6000 # source: vector-receiver
+      - 8686:8686 # api
+    volumes:
+      - /opt/stacks/minio/vector/conf:/config
+      - /opt/stacks/minio/vector/data:/data
+      - /:/host:ro
+      - /var/run/docker.sock:/var/run/docker.sock
+networks: {}

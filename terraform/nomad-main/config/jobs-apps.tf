@@ -3,17 +3,6 @@ resource "nomad_namespace" "apps" {
   description = "Apps"
 }
 
-locals {
-  coder_version          = "2.7.0"
-  miniflux_version       = "2.1.4"
-  n8n_version            = "1.62.3"
-  plex_version           = "latest"
-  ollama_version         = "latest"
-  faster_whisper_version = "latest-cuda"
-  langfuse_version       = "2"
-  handbrake_version      = "latest"
-}
-
 resource "random_string" "miniflux_admin_password" {
   length  = 12
   special = true

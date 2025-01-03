@@ -1,0 +1,35 @@
+// ID of cloudflare account for pushing configuration into zerotrust
+cloudflare_account_id  = "cfaccountid"
+// Cloudflare API _TOKEN_ (NOT KEY!!!) with permissions to read/write zerotrust/tunnels/access/dns 
+cloudflare_token       = "cfapitoken"
+// Unique name of cloudflare tunnel
+cloudflare_tunnel_name = "mytunnelname"
+// CLOUDFLARE EXTERNAL ZONE NAME
+dns_zone_name          = "example.com"
+// CLOUDFLARE ACCESS - IdP configuration for gating externally exposed services behind access
+// This configuration roughly matches my authentik IdP configuration
+idp_configuration = {
+  name = "My Auth Systems"
+  type = "oidc"
+  backend_config = {
+    client_id                   = "authentik-provider-client-id"
+    client_secret               = "authentik-provider-client-secret"
+    auth_url                    = "https://auth.${dns_zone_name}/application/o/authorize/"
+    certificate_url             = "https://auth.${dns_zone_name}/application/o/cloudflare-zta/jwks/"
+    token_url                   = "https://auth.${dns_zone_name}/application/o/token/"
+    email_claim                 = "email"
+    scopes                      = ["openid", "email", "profile"]
+    claims                      = []
+    proof_key_for_code_exchange = false
+  }
+}
+
+// List of tunnel forward objects to be applied to the above tunnel.
+// Subdomain inside of each subobject is prepended to ${dns_zone_name}
+tunnel_forwards = [
+  {
+    subdomain = "webhooks"
+    // This will most commonly be the address of a traefik inside the cluster
+    target    = "https://10.100.10.32:443"
+  },
+]

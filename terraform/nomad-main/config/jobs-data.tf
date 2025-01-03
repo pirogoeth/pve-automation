@@ -9,7 +9,7 @@ resource "nomad_job" "changedetection" {
   hcl2 {
     vars = {
       namespace = nomad_namespace.data.name
-      version   = "0.47.03"
+      version   = local.changedetectionio_version
       domain    = var.service_base_domain
     }
   }

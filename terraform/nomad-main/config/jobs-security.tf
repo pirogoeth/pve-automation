@@ -8,7 +8,7 @@ resource "nomad_job" "falco" {
 
   hcl2 {
     vars = {
-      version      = "0.38.1"
+      version      = local.falco_version
       falco_config = file("${local.jobs}/security/falco/config.yml")
     }
   }

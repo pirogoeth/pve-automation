@@ -8,7 +8,7 @@ resource "nomad_job" "traefik" {
 
   hcl2 {
     vars = {
-      version           = "v3.0.4"
+      version           = local.traefik_version
       domain            = var.service_base_domain
       letsencrypt_email = var.letsencrypt_email
     }
@@ -20,7 +20,7 @@ resource "nomad_job" "cloudflared" {
 
   hcl2 {
     vars = {
-      version = "2024.6.1"
+      version = local.cloudflared_version
       token   = var.cloudflare_tunnel_token
     }
   }

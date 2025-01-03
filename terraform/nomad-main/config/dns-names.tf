@@ -23,22 +23,22 @@ locals {
 }
 
 resource "dns_a_record_set" "traefik" {
-  zone = "${var.service_base_domain}."
-  name = "traefik"
+  zone      = "${var.service_base_domain}."
+  name      = "traefik"
   addresses = local.traefik_addresses
-  ttl = 300
+  ttl       = 300
 }
 
 import {
   to = dns_a_record_set.traefik
-  id = "traefik.${var.service_base_domain}"
+  id = "traefik.${var.service_base_domain}."
 }
 
 resource "dns_a_record_set" "minio" {
-  zone = "${var.service_base_domain}."
-  name = "s3"
+  zone      = "${var.service_base_domain}."
+  name      = "s3"
   addresses = local.minio_addresses
-  ttl = 300
+  ttl       = 300
 }
 
 import {
@@ -47,10 +47,10 @@ import {
 }
 
 resource "dns_cname_record" "minio_glob" {
-  zone = "${var.service_base_domain}."
-  name = "*.s3"
+  zone  = "${var.service_base_domain}."
+  name  = "*.s3"
   cname = dns_a_record_set.minio.id
-  ttl = 300
+  ttl   = 300
 }
 
 import {
@@ -61,10 +61,10 @@ import {
 resource "dns_cname_record" "services" {
   for_each = toset(local.service_names)
 
-  zone = "${var.service_base_domain}."
-  name = each.key
+  zone  = "${var.service_base_domain}."
+  name  = each.key
   cname = dns_a_record_set.traefik.id
-  ttl = 3600
+  ttl   = 3600
 }
 
 import {
@@ -73,3 +73,4 @@ import {
   to = dns_cname_record.services[each.key]
   id = "${each.key}.${var.service_base_domain}."
 }
+

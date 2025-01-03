@@ -1,0 +1,38 @@
+// vim: set ai et ts=2 sts=2 sw=2 syntax=tfvars
+
+// Postgres connection information
+postgres_host     = "10.100.0.6"
+postgres_port     = 54321
+postgres_username = "admin"
+postgres_password = "MyPostgresAdminPassword1!"
+
+// Roles and databases to manage inside the database
+// Each entry in the list should be an object containing the following structure:
+//   object({
+//     name  = string
+//     roles = optional(list(string))
+//     privileges = optional(object({
+//       superuser       = optional(bool)
+//       create_database = optional(bool)
+//       create_role     = optional(bool)
+//       inherit         = optional(bool)
+//       login           = optional(bool)
+//       replication     = optional(bool)
+//     }))
+//     databases = list(object({
+//       name              = string
+//       encoding          = optional(string)
+//       connection_limit  = optional(number)
+//       allow_connections = optional(bool)
+//     }))
+//   })
+managed_roles = [
+  {
+    name = "terraform",
+    databases = [
+      {
+        name = "terraform-state"
+      }
+    ]
+  },
+]

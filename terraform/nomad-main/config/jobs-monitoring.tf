@@ -1,13 +1,3 @@
-locals {
-  prometheus_version           = "2.53.1"
-  grafana_version              = "11.3.1"
-  loki_version                 = "3.1.0"
-  tempo_version                = "2.5.0"
-  vector_version               = "0.34.2-debian"
-  nvidia_exporter_version      = "1.2.0"
-  qbittorrent_exporter_version = "v1.5.1"
-}
-
 resource "nomad_namespace" "monitoring" {
   name        = "monitoring"
   description = "Application monitoring"

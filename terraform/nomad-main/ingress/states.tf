@@ -1,16 +1,10 @@
 # Import state from the config module
 data "terraform_remote_state" "infra" {
-  backend = "local"
-
-  config = {
-    path = abspath(join("/", [path.root, "..", "infra", "terraform.tfstate"]))
-  }
+  backend   = "pg"
+  workspace = "nomad-main-infra"
 }
 
 data "terraform_remote_state" "config" {
-  backend = "local"
-
-  config = {
-    path = abspath(join("/", [path.root, "..", "config", "terraform.tfstate"]))
-  }
+  backend   = "pg"
+  workspace = "nomad-main-config"
 }

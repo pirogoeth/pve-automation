@@ -31,3 +31,11 @@ variable "idp_configuration" {
     })
   })
 }
+
+variable "tunnel_forwards" {
+  type = list(object({
+    subdomain = string
+    target    = string
+    path      = optional(string)
+  }))
+}
