@@ -21,6 +21,15 @@ locals {
       }
     }
   ])...)
+  managed_grants = flatten([
+    for role in var.managed_roles : [
+      for idx in range(length(role.grants)) : {
+        id    = "${role.name}-${idx}"
+        role  = role,
+        grant = role.grants[idx],
+      }
+    ]
+  ])
 }
 
 resource "random_password" "role_password" {
@@ -45,6 +54,18 @@ resource "postgresql_role" "managed_role" {
   inherit         = local.role_privs[each.key].inherit
   login           = local.role_privs[each.key].login
   replication     = local.role_privs[each.key].replication
+}
+
+resource "postgresql_grant" "managed_grant" {
+  for_each = { for mg in local.managed_grants : mg.id => mg }
+
+  role              = each.value.role.name
+  database          = each.value.grant.database
+  schema            = each.value.grant.schema
+  object_type       = each.value.grant.object_type
+  privileges        = each.value.grant.privileges
+  objects           = each.value.grant.objects
+  with_grant_option = each.value.grant.with_grant_option
 }
 
 resource "postgresql_database" "managed_db" {

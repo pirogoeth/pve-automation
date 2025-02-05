@@ -126,17 +126,17 @@ resource "nomad_job" "ollama" {
   }
 }
 
-# resource "nomad_job" "open_webui" {
-#   jobspec = file("${local.jobs}/apps/open-webui.nomad.hcl")
+resource "nomad_job" "open_webui" {
+  jobspec = file("${local.jobs}/apps/open-webui.nomad.hcl")
 
-#   hcl2 {
-#     vars = {
-#       open_webui_version = "main"
-#       pipelines_version  = "main"
-#       domain             = var.service_base_domain
-#     }
-#   }
-# }
+  hcl2 {
+    vars = {
+      open_webui_version = local.open_webui_version
+      pipelines_version  = local.open_webui_pipelines_version
+      domain             = var.service_base_domain
+    }
+  }
+}
 
 # resource "nomad_job" "phoenix" {
 #   jobspec = file("${local.jobs}/apps/phoenix.nomad.hcl")

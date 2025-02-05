@@ -45,8 +45,8 @@ job "faster-whisper" {
         ]
 
         labels = {
-          appname   = "faster-whisper-server"
-          component = "server"
+          appname                  = "faster-whisper-server"
+          component                = "server"
           vector_stdout_parse_mode = "plain"
           vector_stderr_parse_mode = "plain"
         }
@@ -56,7 +56,7 @@ job "faster-whisper" {
 
       resources {
         cpu        = 500
-        memory     = 256
+        memory     = 512
         memory_max = 4096
       }
 

@@ -1,13 +1,15 @@
 locals {
   # apps
-  coder_version          = "2.7.0"
-  miniflux_version       = "2.1.4"
-  n8n_version            = "1.71.2"
-  plex_version           = "latest"
-  ollama_version         = "latest"
-  faster_whisper_version = "latest-cuda"
-  langfuse_version       = "2"
-  handbrake_version      = "latest"
+  coder_version                = "2.7.0"
+  miniflux_version             = "2.1.4"
+  n8n_version                  = "1.71.2"
+  plex_version                 = "latest"
+  ollama_version               = "latest"
+  faster_whisper_version       = "latest-cuda"
+  langfuse_version             = "2"
+  handbrake_version            = "latest"
+  open_webui_version           = "main"
+  open_webui_pipelines_version = "main"
 
   # data
   changedetectionio_version = "0.47.03"
