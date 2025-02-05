@@ -94,15 +94,30 @@
           "plugin": [_docker_plugin] + _other_plugins,
         }, recursive=true, list_merge="replace") }}
 
-- name: Write Nomad config
-  copy:
-    content: "{{ _nomad_config | to_nice_json }}"
-    dest: /etc/nomad/conf.d/nomad.json
-    owner: nomad
-    group: nomad
-    mode: 0644
-  notify:
-    - Restart nomad
+- name: Reconfigure Nomad
+  throttle: 1
+  block:
+  - name: Write Nomad config
+    copy:
+      content: "{{ _nomad_config | to_nice_json }}"
+      dest: /etc/nomad/conf.d/nomad.json
+      owner: nomad
+      group: nomad
+      mode: 0644
+    notify:
+      - Restart nomad
+      - Reload nomad
+
+  - name: Wait for Nomad to be running
+    wait_for:
+      port: 4646
+      timeout: 120
+    register: nomad_running
+
+  - name: Fail play if Nomad is not running/listening
+    fail:
+      msg: Nomad is not up and listening by end of timeout, manual intervention required! 
+    when: nomad_running is failed
 
 - name: Ensure Nomad service started
   service:

@@ -21,7 +21,7 @@
       tf_project_path: "{{ tf_project_path }}"
     vars:
       args:
-        binary_path: "{{ tf_binary_path }}"
+        binary_path: "{{ tf_binary }}"
         project_path: "{{ tf_project_path }}"
         workspace: "nomad-main-infra"
   

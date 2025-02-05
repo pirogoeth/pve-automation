@@ -22,3 +22,5 @@ nomad_config_initial:
 
 nomad_bootstrap_expect: 1
 nomad_docker_auth_file: ~
+
+nomad_allow_automatic_restart: false

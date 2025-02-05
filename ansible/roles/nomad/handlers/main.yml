@@ -7,6 +7,12 @@
 - name: Restart nomad
   include_tasks:
     file: ./restart_nomad.yml
+  when: nomad_allow_automatic_restart is truthy
+
+- name: Reload nomad
+  systemd:
+    name: nomad
+    state: reloaded
 
 - name: Enable nomad service
   systemd:
