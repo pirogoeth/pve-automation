@@ -162,7 +162,7 @@
 # }
 
 module "nas_downloads_share" {
-  source = "../../modules/nomad-volume-nfs"
+  source = "../modules/nomad-volume-nfs"
 
   namespace = "apps"
   id        = "nfs-downloads"
@@ -176,7 +176,7 @@ module "nas_downloads_share" {
 }
 
 module "nas_plex_data_share" {
-  source = "../../modules/nomad-volume-nfs"
+  source = "../modules/nomad-volume-nfs"
 
   namespace = "apps"
   id        = "nfs-plex-data"

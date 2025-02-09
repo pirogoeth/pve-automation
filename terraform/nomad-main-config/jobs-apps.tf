@@ -32,16 +32,16 @@ resource "nomad_job" "n8n" {
   }
 }
 
-resource "nomad_job" "coder" {
-  jobspec = file("${local.jobs}/apps/coder.nomad.hcl")
-
-  hcl2 {
-    vars = {
-      version = local.coder_version
-      domain  = var.service_base_domain
-    }
-  }
-}
+# resource "nomad_job" "coder" {
+#   jobspec = file("${local.jobs}/apps/coder.nomad.hcl")
+# 
+#   hcl2 {
+#     vars = {
+#       version = local.coder_version
+#       domain  = var.service_base_domain
+#     }
+#   }
+# }
 
 # resource "nomad_job" "whishper" {
 #   jobspec = file("${local.jobs}/apps/whishper.nomad.hcl")
@@ -57,16 +57,16 @@ resource "nomad_job" "coder" {
 #   }
 # }
 
-resource "nomad_job" "windmill" {
-  jobspec = file("${local.jobs}/apps/windmill.nomad.hcl")
-
-  hcl2 {
-    vars = {
-      domain           = var.service_base_domain
-      postgres_version = "16"
-    }
-  }
-}
+# resource "nomad_job" "windmill" {
+#   jobspec = file("${local.jobs}/apps/windmill.nomad.hcl")
+# 
+#   hcl2 {
+#     vars = {
+#       domain           = var.service_base_domain
+#       postgres_version = "16"
+#     }
+#   }
+# }
 
 # resource "nomad_job" "localai" {
 #   jobspec = file("${local.jobs}/apps/localai.nomad.hcl")
@@ -149,18 +149,18 @@ resource "nomad_job" "open_webui" {
 #   }
 # }
 
-resource "nomad_job" "langfuse" {
-  jobspec = file("${local.jobs}/apps/langfuse.nomad.hcl")
-
-  hcl2 {
-    vars = {
-      version               = local.langfuse_version
-      domain                = var.service_base_domain
-      mailgun_smtp_username = "langfuse@mail.${var.service_base_domain}"
-      mailgun_smtp_password = var.langfuse_mailgun_smtp_password
-    }
-  }
-}
+# resource "nomad_job" "langfuse" {
+#   jobspec = file("${local.jobs}/apps/langfuse.nomad.hcl")
+# 
+#   hcl2 {
+#     vars = {
+#       version               = local.langfuse_version
+#       domain                = var.service_base_domain
+#       mailgun_smtp_username = "langfuse@mail.${var.service_base_domain}"
+#       mailgun_smtp_password = var.langfuse_mailgun_smtp_password
+#     }
+#   }
+# }
 
 # resource "nomad_job" "handbrake" {
 #   jobspec = file("${local.jobs}/apps/handbrake.nomad.hcl")
