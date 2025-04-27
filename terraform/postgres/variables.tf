@@ -26,7 +26,6 @@ variable "managed_roles" {
       allow_connections = optional(bool)
     }))
     grants = optional(list(object({
-      role     = string
       database = string
       # `schema` is required except if `object_type` is database
       schema = optional(string)

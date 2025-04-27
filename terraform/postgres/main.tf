@@ -66,6 +66,8 @@ resource "postgresql_grant" "managed_grant" {
   privileges        = each.value.grant.privileges
   objects           = each.value.grant.objects
   with_grant_option = each.value.grant.with_grant_option
+
+  depends_on = [postgresql_role.managed_role]
 }
 
 resource "postgresql_database" "managed_db" {
