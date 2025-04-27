@@ -1,3 +1,0 @@
-setuptools
-ansible>=6,<7
-mitogen==0.3.4

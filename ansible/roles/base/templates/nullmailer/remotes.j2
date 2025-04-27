@@ -1,0 +1,3 @@
+{% for remote in nullmailer_remotes %}
+{{ remote.address }} smtp --port={{ remote.port|default(25) }} {{ remote.ssl|default(false)|ternary('--ssl', '') }} {{ remote.auth_login|default(false)|ternary('--auth-login', '') }} --user={{ remote.user }} --pass={{ remote.password }} 
+{% endfor %}

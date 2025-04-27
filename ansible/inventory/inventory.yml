@@ -1,0 +1,8 @@
+---
+
+hypervisors:
+  hosts:
+    vmh-001-usc2:
+      ansible_host: 107.155.67.66
+      ansible_port: 22
+      ansible_python_interpreter: python3

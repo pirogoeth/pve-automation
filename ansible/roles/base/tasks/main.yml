@@ -10,8 +10,10 @@
 
 - include_tasks: serf.yml
   tags: [serf, services]
-- include_tasks: netdata.yml
-  tags: [netdata, services]
+
+# - include_tasks: netdata.yml
+#   tags: [netdata, services]
+
 - when:
   - raid_groups is not none
   - raid_groups | length > 0
@@ -29,3 +31,6 @@
         mount_point: "{{ item.mount_point }}"
         fs_type: "{{ item.fs_type|default('ext4') }}"
         run_anyway: "{{ item.yes_i_know_what_im_doing|default(false) }}"
+
+- include_tasks: mailer.yml
+  tags: [mailer, services]

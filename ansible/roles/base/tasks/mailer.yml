@@ -1,0 +1,54 @@
+---
+
+- name: Ensure postfix is not installed
+  ansible.builtin.apt:
+    pkg:
+      - postfix
+    state: absent
+    autoremove: true
+
+- name: Install nullmailer
+  ansible.builtin.apt:
+    pkg:
+      - nullmailer
+      - mailutils
+    state: latest
+    update_cache: true
+
+- name: Configure nullmailer remotes
+  ansible.builtin.template:
+    src: 'nullmailer/remotes.j2'
+    dest: '/etc/nullmailer/remotes'
+    owner: 'mail'
+    group: 'mail'
+    mode: '0600'
+  notify:
+    - Restart nullmailer
+
+- name: Configure nullmailer defaultdomain
+  ansible.builtin.copy:
+    dest: '/etc/nullmailer/defaultdomain'
+    content: |
+      {{ nullmailer_default_domain }}
+    owner: 'mail'
+    group: 'mail'
+    mode: '0600'
+  notify:
+    - Restart nullmailer
+
+- name: Configure nullmailer adminaddr
+  ansible.builtin.copy:
+    dest: '/etc/nullmailer/adminaddr'
+    content: |
+      {{ nullmailer_adminaddr }}
+    owner: 'mail'
+    group: 'mail'
+    mode: '0600'
+  notify:
+    - Restart nullmailer
+
+- name: Enable nullmailer
+  ansible.builtin.systemd:
+    name: nullmailer.service
+    state: started
+    enabled: true

@@ -1,7 +1,6 @@
 ---
 
 roles:
-- name: artis3n.tailscale
 - name: geerlingguy.docker
 - name: geerlingguy.pip
 - name: xanmanning.k3s

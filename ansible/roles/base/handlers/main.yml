@@ -1,20 +1,25 @@
 ---
 
 - name: Reload systemd
-  systemd:
+  ansible.builtin.systemd:
     daemon_reload: yes
   when: packer_build_type is not defined
 
 - name: Reload serf
-  systemd:
+  ansible.builtin.systemd:
     name: serf.service
     state: reloaded
   when: packer_build_type is not defined
 
 - name: Restart netdata service
-  systemd:
+  ansible.builtin.systemd:
     name: netdata.service
     state: restarted
   when:
   - packer_build_type is not defined
   - netdata_start_after_install
+
+- name: Restart nullmailer
+  ansible.builtin.systemd:
+    name: nullmailer.service
+    state: restarted

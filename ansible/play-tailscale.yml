@@ -6,6 +6,4 @@
   - role: artis3n.tailscale.device
     vars:
       verbose: true
-      tailscale_up_skip: "{{ base_tailscale_up_skip|default(true) }}"
     tags: [tailscale, services]
-  - role: "{{ packer_image_type|default('base') }}"

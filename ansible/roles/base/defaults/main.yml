@@ -24,3 +24,11 @@ raid_groups: []
 ##   logical_volume: disk1
 ##   mount_point: /data1
 ##   fs_type: ext4
+
+nullmailer_default_domain: "misconfigured.org"
+nullmailer_adminaddr: "admin@misconfigured.org"
+nullmailer_remotes:
+  - address: smtp.gmail.com
+    port: 465
+    user: me@gmail.com
+    password: Passwordl0l!

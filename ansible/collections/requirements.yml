@@ -3,6 +3,7 @@
 collections:
 - name: ansible.posix
 - name: ansible.utils
+- name: artis3n.tailscale
 - name: cloud.terraform
 - name: community.docker
 - name: community.general
