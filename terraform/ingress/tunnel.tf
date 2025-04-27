@@ -11,12 +11,29 @@ resource "cloudflare_zero_trust_tunnel_cloudflared_config" "tunnel_config" {
     dynamic "ingress_rule" {
       for_each = var.tunnel_forwards
       content {
-        hostname = "${ingress_rule.value["subdomain"]}.${local.base_domain}"
+        hostname = "${ingress_rule.value["subdomain"]}.${data.cloudflare_zone.zones["${ingress_rule.value["subdomain"]}.${coalesce(ingress_rule.value["domain"], var.dns_zone_name)}"].name}"
         path     = lookup(ingress_rule.value, "path", "")
         service  = ingress_rule.value["target"]
+
         origin_request {
-          http_host_header   = "${ingress_rule.value["subdomain"]}.${local.base_domain}"
-          origin_server_name = "${ingress_rule.value["subdomain"]}.${local.base_domain}"
+          # Set the Host header for requests to the local service
+          http_host_header = "${ingress_rule.value["subdomain"]}.${data.cloudflare_zone.zones["${ingress_rule.value["subdomain"]}.${coalesce(ingress_rule.value["domain"], var.dns_zone_name)}"].name}"
+
+          # Set the name that should be expected when the TLS negotiation with the backend takes place
+          origin_server_name = "${ingress_rule.value["subdomain"]}.${data.cloudflare_zone.zones["${ingress_rule.value["subdomain"]}.${coalesce(ingress_rule.value["domain"], var.dns_zone_name)}"].name}"
+
+          # Disable Cloudflare's happy eyeballs protocol (read more elsewhere)
+          no_happy_eyeballs = lookup(ingress_rule.value["origin_settings"], "no_happy_eyeballs", false)
+
+          dynamic "access" {
+            for_each = ingress_rule.value["access"] != null ? { access = ingress_rule.value["access"] } : {}
+
+            content {
+              required  = access.value["required"]
+              team_name = var.cloudflare_zt_team_name
+              aud_tag   = access.value["audience_tags"]
+            }
+          }
         }
       }
     }
@@ -28,11 +45,19 @@ resource "cloudflare_zero_trust_tunnel_cloudflared_config" "tunnel_config" {
   }
 }
 
-resource "cloudflare_record" "tunnelled_subdomain" {
-  for_each = {
+locals {
+  tunneled_fqdns = [
     for item in var.tunnel_forwards :
-    "${item.subdomain}.${local.base_domain}" => local.tunnel_domain
+    "${item.subdomain}.${data.cloudflare_zone.zones["${item.subdomain}.${coalesce(item.domain, var.dns_zone_name)}"].name}"
+  ]
+  tunnel_mapping = {
+    for item in distinct(local.tunneled_fqdns) :
+    item => local.tunnel_domain
   }
+}
+
+resource "cloudflare_record" "tunnelled_subdomain" {
+  for_each = local.tunnel_mapping
 
   zone_id = data.cloudflare_zone.main.id
   name    = each.key

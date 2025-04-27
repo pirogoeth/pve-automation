@@ -10,6 +10,10 @@ variable "cloudflare_tunnel_name" {
   type = string
 }
 
+variable "cloudflare_zt_team_name" {
+  type = string
+}
+
 variable "dns_zone_name" {
   type = string
 }
@@ -35,7 +39,15 @@ variable "idp_configuration" {
 variable "tunnel_forwards" {
   type = list(object({
     subdomain = string
+    domain    = optional(string)
     target    = string
     path      = optional(string)
+    origin_settings = optional(object({
+      no_happy_eyeballs = optional(bool, true)
+    }), {})
+    access = optional(object({
+      required      = optional(bool, false)
+      audience_tags = optional(list(string), [])
+    }))
   }))
 }
