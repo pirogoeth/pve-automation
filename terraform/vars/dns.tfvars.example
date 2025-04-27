@@ -1,0 +1,6 @@
+service_base_domain            = "example.org"
+dns_server                     = "dns.server.ip"
+dns_key_name                   = "terraform."
+dns_key_algo                   = "hmac-sha256"
+dns_key_secret                 = "DNS server TSIG for terraform"
+

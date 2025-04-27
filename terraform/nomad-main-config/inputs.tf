@@ -82,19 +82,3 @@ variable "langfuse_mailgun_smtp_password" {
   sensitive = true
 }
 
-variable "dns_server" {
-  type = string
-}
-
-variable "dns_key_name" {
-  type = string
-}
-
-variable "dns_key_algo" {
-  type = string
-}
-
-variable "dns_key_secret" {
-  type = string
-  sensitive = true
-}

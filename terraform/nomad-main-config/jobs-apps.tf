@@ -149,18 +149,18 @@ resource "nomad_job" "open_webui" {
 #   }
 # }
 
-# resource "nomad_job" "langfuse" {
-#   jobspec = file("${local.jobs}/apps/langfuse.nomad.hcl")
-# 
-#   hcl2 {
-#     vars = {
-#       version               = local.langfuse_version
-#       domain                = var.service_base_domain
-#       mailgun_smtp_username = "langfuse@mail.${var.service_base_domain}"
-#       mailgun_smtp_password = var.langfuse_mailgun_smtp_password
-#     }
-#   }
-# }
+resource "nomad_job" "langfuse" {
+  jobspec = file("${local.jobs}/apps/langfuse.nomad.hcl")
+
+  hcl2 {
+    vars = {
+      version               = local.langfuse_version
+      domain                = var.service_base_domain
+      mailgun_smtp_username = "langfuse@mail.${var.service_base_domain}"
+      mailgun_smtp_password = var.langfuse_mailgun_smtp_password
+    }
+  }
+}
 
 # resource "nomad_job" "handbrake" {
 #   jobspec = file("${local.jobs}/apps/handbrake.nomad.hcl")

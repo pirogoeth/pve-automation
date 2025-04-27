@@ -2,7 +2,7 @@ locals {
   # apps
   coder_version                = "2.7.0"
   miniflux_version             = "2.1.4"
-  n8n_version                  = "1.78.0"
+  n8n_version                  = "1.90.0"
   plex_version                 = "latest"
   ollama_version               = "latest"
   faster_whisper_version       = "latest-cuda"
@@ -12,7 +12,7 @@ locals {
   open_webui_pipelines_version = "main"
 
   # data
-  changedetectionio_version = "0.47.03"
+  changedetectionio_version = "0.49.2"
 
   # monitoring
   prometheus_version           = "2.53.1"
@@ -27,7 +27,7 @@ locals {
   falco_version = "0.38.1"
 
   # system
-  cloudflared_version = "2024.12.0"
+  cloudflared_version = "2025.4.0"
   traefik_version     = "v3.0.4"
 }
 

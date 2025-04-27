@@ -29,11 +29,6 @@ resource "dns_a_record_set" "traefik" {
   ttl       = 300
 }
 
-import {
-  to = dns_a_record_set.traefik
-  id = "traefik.${var.service_base_domain}."
-}
-
 resource "dns_a_record_set" "minio" {
   zone      = "${var.service_base_domain}."
   name      = "s3"
@@ -41,21 +36,11 @@ resource "dns_a_record_set" "minio" {
   ttl       = 300
 }
 
-import {
-  to = dns_a_record_set.minio
-  id = "s3.${var.service_base_domain}."
-}
-
 resource "dns_cname_record" "minio_glob" {
   zone  = "${var.service_base_domain}."
   name  = "*.s3"
   cname = dns_a_record_set.minio.id
   ttl   = 300
-}
-
-import {
-  to = dns_cname_record.minio_glob
-  id = "*.s3.${var.service_base_domain}."
 }
 
 resource "dns_cname_record" "services" {
@@ -67,10 +52,4 @@ resource "dns_cname_record" "services" {
   ttl   = 3600
 }
 
-import {
-  for_each = toset(local.service_names)
-
-  to = dns_cname_record.services[each.key]
-  id = "${each.key}.${var.service_base_domain}."
-}
 
